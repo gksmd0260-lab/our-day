@@ -1,11 +1,21 @@
-OUR DAY v5.1
-- v5 JavaScript 문법 오류 수정
-- PIN 입장 정상화
-- D-DAY/한국/벨기에 시간 정상화
-- 사진 크게 보기 유지
-- 사진 갤러리 유지
-- 모바일 기분 버튼 가로 스크롤 유지
-- PIN 1001 유지
+OUR DAY v5.2
 
-기존 index.html의 SUPABASE_URL / SUPABASE_ANON_KEY를 새 index.html에 다시 넣고
-index.html / manifest.json / sw.js를 GitHub에 교체 후 Commit 하세요.
+추가:
+- 홈 > 관리자 > 테스트 데이터 전체 초기화
+- 관리자 PIN 확인
+- 2단계 삭제 확인
+- daily_answers / daily_moods / daily_photos / daily_missions 전체 삭제
+- couple-photos Storage 실제 이미지 파일까지 삭제
+- 초기화 후 화면 자동 갱신
+
+기본 ADMIN_PIN = 1001
+
+필수 1회 작업:
+1. Supabase > SQL Editor
+2. supabase_reset_policy.sql 내용 전체 붙여넣기
+3. Run
+
+업데이트:
+- index.html / manifest.json / sw.js를 GitHub에 교체
+- 기존 SUPABASE_URL / SUPABASE_ANON_KEY 다시 입력
+- Commit 후 Vercel 재배포

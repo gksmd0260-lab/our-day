@@ -1,4 +1,4 @@
-const CACHE="our-day-v5-1";
+const CACHE="our-day-v5-2";
 self.addEventListener("install",event=>{self.skipWaiting();});
 self.addEventListener("activate",event=>{
   event.waitUntil(
