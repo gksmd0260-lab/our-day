@@ -3,7 +3,7 @@
   "short_name": "OUR DAY",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#fff7f8",
-  "theme_color": "#fff7f8",
+  "background_color": "#f6fbf3",
+  "theme_color": "#f6fbf3",
   "icons": []
 }
