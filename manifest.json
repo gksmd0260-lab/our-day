@@ -1,0 +1,9 @@
+{
+  "name": "OUR DAY",
+  "short_name": "OUR DAY",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fff7f8",
+  "theme_color": "#fff7f8",
+  "icons": []
+}
