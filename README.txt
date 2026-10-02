@@ -1,19 +1,21 @@
-OUR DAY v4
+OUR DAY v5
 
-변경
-- 귀국일: 2027-01-31
-- 만난 날: 2026-10-01
-- 함께한 지 N일 자동 계산 (만난 날 = 1일)
-- 홈 / 오늘 / 지난 기록 3개 탭
-- 입장 후 언제든 홈으로 돌아갈 수 있음
-- 홈에서 귀국일과 함께한 날짜 확인
-- 하능 지은 표기 유지
-- 365개 질문 유지
-- Supabase 설정이 빠져도 D-DAY/한국·벨기에 시간은 깨지지 않도록 수정
+추가/수정
+- 홈 화면 디자인 개선
+- 오늘 상대방이 답변/기분/사진/미션을 남겼는지 홈에서 상태 표시
+- 기념일 카드: 100/200/300/365/500/730/1000일 중 다음 일정 표시
+- 사진 전용 갤러리 탭 추가
+- 오늘 사진/지난 기록 사진/갤러리 사진을 눌러 크게 보기
+- 모바일 '지금 기분' 버튼이 세로로 깨지지 않도록 가로 스크롤 방식 적용
+- PIN 기본값 1001
+- Service Worker를 network-first 방식으로 변경하여 새 배포 반영 개선
+- 기존 365개 질문 / 기록 달력 / D-DAY / 함께한 날짜 기능 유지
 
-중요
-새 index.html로 교체한 뒤 기존에 사용하던
-SUPABASE_URL
-SUPABASE_ANON_KEY (Publishable key)
-COUPLE_PIN
-값을 CONFIG에 다시 넣어야 공유 기능이 작동합니다.
+업데이트 방법
+1. GitHub의 index.html / manifest.json / sw.js를 이 버전 파일로 교체
+2. 새 index.html의 CONFIG에 기존 SUPABASE_URL / SUPABASE_ANON_KEY를 다시 입력
+3. COUPLE_PIN은 1001로 이미 설정되어 있음
+4. Commit changes
+5. Vercel 배포 완료 후 새로고침
+
+Supabase SQL은 다시 실행할 필요 없습니다.
