@@ -1,4 +1,4 @@
-const CACHE="our-day-v5-3-green";
+const CACHE="our-day-v5-4-photo-fix";
 self.addEventListener("install",event=>{self.skipWaiting();});
 self.addEventListener("activate",event=>{
   event.waitUntil(
