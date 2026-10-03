@@ -1,14 +1,15 @@
-OUR DAY v5.5 PHOTO KEY FIX
+OUR DAY v5.6 PERSONAL QUESTIONS
 
-수정:
-- Supabase Storage Invalid key 오류 수정
-- 화면 사용자명은 하능 / 지은 그대로 유지
-- Storage 파일명만 haneung / jieun 영문 슬러그로 저장
-- 예: 2026-10-03/haneung-1790983243155.jpeg
-- 기존 파스텔 연두 테마, 갤러리, 관리자 초기화, 365개 질문 유지
+- 365개 질문 전면 교체
+- '둘 중 누가 더 ~?' 비교형 질문 제거
+- 감정 / 추억 / 소통 / 갈등 / 애정표현 / 개인 가치관 / 미래 중심
+- 365일 중복 없음
+- 기존 사진, 갤러리, 기념일, 관리자 초기화, 파스텔 연두 테마 유지
+
+주의:
+질문 문구는 현재 DB에 저장되지 않고 날짜별로 코드에서 결정됩니다.
+테스트 답변이 남아 있다면 질문 세트 변경 후 과거 답변과 질문이 맞지 않을 수 있으니,
+본격 사용 전 관리자 초기화를 한 번 하는 것을 권장합니다.
 
 업데이트:
-1. GitHub에서 index.html / manifest.json / sw.js 교체
-2. 새 index.html에 기존 SUPABASE_URL / SUPABASE_ANON_KEY 입력
-3. Commit
-4. Vercel 배포 완료 후 새로고침
+index.html / manifest.json / sw.js 교체 → Supabase URL/Key 다시 입력 → Commit → Vercel 재배포.
