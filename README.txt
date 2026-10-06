@@ -1,26 +1,16 @@
-OUR DAY v5.19 - PROFILE PHOTO
+OUR DAY v5.20 - iPhone 프로필 사진 변경 수정
 
-변경
-- OUR DAY 아래의 하능/지은 한글 표시 제거 유지
-- 홈 '우리 기록'의 원형 사진 아래 한글 이름 제거
-- HaNeung & JiEun을 두 원형 사진 아래 중앙 배치
-- 원형 사진을 눌러 프로필 사진 변경 가능
-- 프로필 사진은 Supabase에 저장되어 하능/지은 두 기기에서 동일하게 보임
-
-필수 1회
-Supabase > SQL Editor에서
-supabase_profile_setup.sql 전체 실행
-
-사진 변경 방법
-1. 홈 > 우리 기록
-2. 바꾸고 싶은 원형 사진 누르기
-3. 휴대폰/PC에서 사진 선택
-4. 자동 업로드 후 바로 반영
+수정
+- iPhone Safari에서 사진을 선택해도 프로필이 안 바뀌던 문제 수정
+- element id를 전역변수처럼 쓰지 않고 document.getElementById로 명확히 참조
+- 사진 선택 직후 원형 프로필에 즉시 미리보기 표시
+- Supabase 저장 완료/실패 메시지를 홈에 표시
+- 저장 실패 시 기존 서버 사진으로 자동 복원
 
 업데이트
-1. supabase_profile_setup.sql 실행
-2. index.html / sw.js 교체
-3. 기존 Supabase URL/Key 확인
-4. Commit → Vercel 배포
+1. index.html / sw.js 교체
+2. Commit → Vercel 배포
+3. 기존 v5.19에서 supabase_profile_setup.sql을 이미 실행했다면 추가 SQL 없음
 
-추가 Vercel 환경변수 없음
+만약 '프로필 사진 변경 실패: new row violates row-level security policy' 같은 문구가 뜨는 경우에만
+supabase_profile_storage_fix.sql을 Supabase SQL Editor에서 1회 실행
