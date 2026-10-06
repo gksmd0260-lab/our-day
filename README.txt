@@ -1,15 +1,13 @@
-OUR DAY v5.7 LIGHT QUESTIONS
+OUR DAY v5.8 - AI 오늘의 우리 노래
 
-- 연애 초반에 부담 없는 질문으로 전면 조정
-- 같이 살기/결혼/평생/10년 뒤 같은 깊은 주제 제거
-- 한두 문장으로 짧게 답할 수 있는 수준
-- 오늘/추억/취향/데이트/음식/연락/여행/장난/애정표현 등 10개 카테고리를 교차 배치
-- 비슷한 키워드가 연달아 나오지 않도록 순서를 섞음
-- 365개 중복 없음
-- 기존 기능 유지
+1) Supabase SQL Editor에서 supabase_song_setup.sql 실행
+2) OpenAI API key 생성
+3) Google Cloud에서 YouTube Data API v3 활성화 후 API key 생성
+4) Vercel > Settings > Environment Variables:
+   OPENAI_API_KEY
+   YOUTUBE_API_KEY
+5) GitHub에 index.html / manifest.json / sw.js / api/recommend-song.js 업로드
+6) index.html의 SUPABASE_URL / SUPABASE_ANON_KEY 다시 입력
+7) Commit 후 Vercel Redeploy
 
-업데이트:
-index.html / manifest.json / sw.js 교체
-→ SUPABASE_URL / SUPABASE_ANON_KEY 다시 입력
-→ Commit
-→ Vercel 배포 후 새로고침
+API 키는 index.html에 넣지 말 것.
