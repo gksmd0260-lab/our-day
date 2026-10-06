@@ -1,8 +1,8 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   try {
-    const { question, answers, moods, recent_songs = [] } = req.body || {};
-    if (!question || !answers?.haneung || !answers?.jieun || !moods?.haneung || !moods?.jieun) return res.status(400).json({ error: "두 사람의 답변과 기분이 모두 필요해." });
+    const { question, answers, moods, diaries, recent_songs = [] } = req.body || {};
+    if (!question || !answers?.haneung || !answers?.jieun || !moods?.haneung || !moods?.jieun || !diaries?.haneung || !diaries?.jieun) return res.status(400).json({ error: "두 사람의 답변, 기분, 한 줄 일기가 모두 필요해." });
     const openaiKey=process.env.OPENAI_API_KEY, youtubeKey=process.env.YOUTUBE_API_KEY;
     if(!openaiKey) return res.status(500).json({error:"OPENAI_API_KEY가 Vercel에 설정되지 않았어."});
     if(!youtubeKey) return res.status(500).json({error:"YOUTUBE_API_KEY가 Vercel에 설정되지 않았어."});
@@ -45,6 +45,8 @@ ${recentText}
 지은 답변: ${answers.jieun}
 하능 기분: ${moods.haneung}
 지은 기분: ${moods.jieun}
+하능 한 줄 일기: ${diaries.haneung}
+지은 한 줄 일기: ${diaries.jieun}
 
 형식:
 {"song_title":"곡명","artist":"아티스트","reason":"짧은 이유","mood_tags":["키워드1","키워드2"]}`;
