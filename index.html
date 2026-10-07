@@ -1113,6 +1113,56 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
   .recordAnswer{padding:11px!important}
 }
 
+
+/* ===== OUR DAY v5.30 creator footer / hidden admin ===== */
+.creatorBox{
+  margin:18px 2px 4px;
+  padding:14px 4px 6px;
+  text-align:center;
+  border-top:1px solid var(--line);
+}
+.creatorTitle{
+  font-size:11px;
+  letter-spacing:.12em;
+  color:#92988e;
+  margin-bottom:4px;
+}
+.creatorName{
+  font-family:var(--mood-font);
+  font-size:13px;
+  color:#687164;
+}
+.creatorAdminBtn{
+  margin-top:8px;
+  border:0;
+  background:transparent;
+  color:#a2a79f;
+  font-size:10px;
+  padding:4px 8px;
+  cursor:pointer;
+}
+.creatorAdminBtn:active{opacity:.65}
+.creatorAdminPanel{
+  margin:10px auto 0;
+  max-width:330px;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fffdf8;
+  text-align:left;
+}
+.creatorAdminPanel .status{font-size:11px!important}
+.creatorAdminPanel .btn{
+  width:100%;
+  margin:6px 0 0!important;
+  padding:9px 10px!important;
+  font-size:11px!important;
+}
+.creatorAdminPanel input{
+  font-size:12px!important;
+  padding:10px!important;
+}
+
 </style></head><body><main class="wrap">
 <div class="top"><div><div class="brand">OUR DAY</div></div><div class="muted" id="today"></div></div>
 <section class="hero" id="hero"><div>지지은 한국복귀까지</div><h1 id="dday">D-?</h1><div id="remain"></div><div style="margin-top:5px;font-size:12px;opacity:.9">귀국일 · 2027.01.31</div><div class="clocks"><div class="clock">🇰🇷 한국<b id="kr">--:--</b></div><div class="clock">🇧🇪 벨기에<b id="be">--:--</b></div></div></section>
@@ -1171,18 +1221,18 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
     <button class="btn" style="background:#edf6e8;color:#5f7f52" onclick="changeUser()">하능 / 지은 다시 선택</button>
   </section>
 
-  <section class="card">
-    <h2>관리자</h2>
-    <div class="status" style="margin-bottom:10px">테스트 중 쌓인 답변·기분·미션·사진을 한 번에 초기화할 수 있어.</div>
-    <button class="btn" style="background:#4f5d49" onclick="openResetPanel()">테스트 데이터 전체 초기화</button>
-    <div id="resetPanel" style="display:none;margin-top:12px">
+  <div class="creatorBox">
+    <div class="creatorTitle">CREATED FOR OUR DAY</div>
+    <div class="creatorName">HaNeung × JiEun</div>
+    <button class="creatorAdminBtn" onclick="openResetPanel()">관리자</button>
+    <div id="resetPanel" class="creatorAdminPanel" style="display:none">
       <input id="adminPinInput" type="password" inputmode="numeric" placeholder="관리자 PIN">
-      <div class="status" style="margin:8px 0">삭제하면 복구할 수 없어. 실제 사용 기록이 생긴 뒤에는 주의해서 사용해.</div>
-      <button class="btn" style="background:#7aa468" onclick="resetAllData()">전체 삭제 실행</button>
-      <button class="btn" style="margin-left:6px;background:#edf6e8;color:#5f7f52" onclick="closeResetPanel()">취소</button>
+      <div class="status" style="margin:8px 0">테스트 데이터 초기화 기능이야. 실제 기록 삭제에 주의해.</div>
+      <button class="btn" style="background:#5c6857" onclick="resetAllData()">테스트 데이터 전체 초기화</button>
+      <button class="btn secondary" onclick="closeResetPanel()">닫기</button>
       <div class="status" id="resetStatus"></div>
     </div>
-  </section>
+  </div>
 </div>
 
 <div id="todayView" style="display:none"><section class="card"><h2>오늘의 질문 <span class="muted" id="qno"></span></h2><div class="question" id="question"></div><textarea id="answer" placeholder="내 답을 남겨봐"></textarea><button class="btn" onclick="saveAnswer()" style="margin-top:8px">답 저장</button><div id="answers"></div></section><section class="card"><h2>지금 기분</h2><div class="row" id="moodBtns"></div><div class="status" id="moodShared"></div></section>
