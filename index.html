@@ -879,6 +879,46 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
   font-size:12px!important;font-weight:800!important;
 }
 
+
+/* ===== OUR DAY v5.28 full day record modal ===== */
+.archiveActions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+.archiveActions .archiveToggle{margin-top:0}
+.archiveRecordBtn{
+  width:100%;
+  border:1px solid #dce4d6;
+  background:#fffdf8;
+  color:#53634d;
+  border-radius:13px;
+  padding:9px 12px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+}
+.archiveRecordBtn:active{transform:scale(.99)}
+.recordPhotoGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  margin-top:10px;
+}
+.recordPhotoGrid img{
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  border-radius:15px;
+  display:block;
+  border:1px solid var(--line);
+}
+@media(max-width:560px){
+  .archiveActions{gap:6px}
+  .archiveRecordBtn,.archiveToggle{font-size:11px!important;padding:9px 8px!important}
+}
+
 </style></head><body><main class="wrap">
 <div class="top"><div><div class="brand">OUR DAY</div></div><div class="muted" id="today"></div></div>
 <section class="hero" id="hero"><div>지지은 한국복귀까지</div><h1 id="dday">D-?</h1><div id="remain"></div><div style="margin-top:5px;font-size:12px;opacity:.9">귀국일 · 2027.01.31</div><div class="clocks"><div class="clock">🇰🇷 한국<b id="kr">--:--</b></div><div class="clock">🇧🇪 벨기에<b id="be">--:--</b></div></div></section>
@@ -1210,7 +1250,12 @@ async function loadArchiveFeed(){
           h+='<div class="archiveBlock"><b>미션</b>'+missions.map(x=>escapeHtml(x.person)+(x.done?' 완료 ✓':' 미완료')).join(' · ')+'</div>';
         }
         h+='</div>';
+        h+='<div class="archiveActions">';
         h+='<button class="archiveToggle" onclick="toggleArchiveDay(\''+day+'\')">더보기</button>';
+        h+='<button class="archiveRecordBtn" onclick="openArchiveRecord(\''+day+'\')">그날 기록</button>';
+        h+='</div>';
+      }else{
+        h+='<button class="archiveRecordBtn" style="margin-top:10px" onclick="openArchiveRecord(\''+day+'\')">그날 기록</button>';
       }
       h+='</article>';
       cards.push(h);
@@ -1375,28 +1420,48 @@ async function loadGallery(){
   setupPhotoViewerGesture();
 }
 
+async function openArchiveRecord(day){
+  return openDayRecord(day,"","");
+}
+
 async function openPhotoRecord(day,person,encodedUrl){
+  let focusUrl="";
+  try{focusUrl=encodedUrl?decodeURIComponent(encodedUrl):""}catch(_e){focusUrl=encodedUrl||""}
+  return openDayRecord(day,focusUrl,person||"");
+}
+
+async function openDayRecord(day,focusUrl="",owner=""){
   recordModal.classList.add("open");
   document.body.style.overflow="hidden";
-  recordModalDate.textContent=day+" · 그날의 기록";
-  recordModalOwner.textContent=person+"이 올린 사진";
+  recordModalDate.textContent=formatArchiveDate(day)+" · 그날의 기록";
+  recordModalOwner.textContent=owner?owner+"이 올린 사진에서 열었어":"하루 전체 기록";
   recordModalContent.innerHTML='<div class="status">기록 불러오는 중...</div>';
 
   try{
-    const [a,m,d,mi,song]=await Promise.all([
+    const [a,m,d,mi,song,p]=await Promise.all([
       sb.from("daily_answers").select("*").eq("day",day).order("person",{ascending:true}),
       sb.from("daily_moods").select("*").eq("day",day).order("person",{ascending:true}),
       sb.from("daily_diaries").select("*").eq("day",day).order("person",{ascending:true}),
       sb.from("daily_missions").select("*").eq("day",day),
-      sb.from("daily_songs").select("*").eq("day",day).maybeSingle()
+      sb.from("daily_songs").select("*").eq("day",day).maybeSingle(),
+      sb.from("daily_photos").select("*").eq("day",day).order("person",{ascending:true})
     ]);
 
-    let h='<div class="recordHeroPhoto"><img src="'+decodeURIComponent(encodedUrl)+'" alt="'+day+' 사진"></div>';
+    const photos=p.data||[];
+    let h="";
+
+    if(photos.length){
+      h+='<div class="recordSection"><b>그날 사진</b><div class="recordPhotoGrid">'+
+        photos.map(x=>'<img src="'+x.url+'" alt="'+escapeHtml(day+' '+x.person+' 사진')+'" loading="lazy">').join("")+
+        '</div></div>';
+    }else if(focusUrl){
+      h+='<div class="recordHeroPhoto"><img src="'+focusUrl+'" alt="'+day+' 사진"></div>';
+    }
 
     h+='<div class="recordSection"><b>오늘의 질문</b>'+
        '<div class="question" style="font-size:16px;margin:0">'+escapeHtml(QUESTIONS[qIndex(day)])+'</div></div>';
 
-    h+='<div class="recordSection"><b>✍️ 우리 답변</b>';
+    h+='<div class="recordSection"><b>우리 답변</b>';
     if((a.data||[]).length){
       h+=(a.data||[]).map(x=>
         '<div class="recordAnswer"><b>'+escapeHtml(x.person)+'</b>'+escapeHtml(x.answer)+'</div>'
@@ -1406,7 +1471,7 @@ async function openPhotoRecord(day,person,encodedUrl){
     }
     h+='</div>';
 
-    h+='<div class="recordSection"><b>🙂 그날 기분</b>';
+    h+='<div class="recordSection"><b>그날 기분</b>';
     if((m.data||[]).length){
       h+=(m.data||[]).map(x=>'<div class="recordAnswer">'+escapeHtml(x.person)+' · '+escapeHtml(x.mood)+'</div>').join("");
     }else{
@@ -1415,7 +1480,7 @@ async function openPhotoRecord(day,person,encodedUrl){
     h+='</div>';
 
     if((d.data||[]).length){
-      h+='<div class="recordSection"><b>📝 한 줄 일기</b>'+
+      h+='<div class="recordSection"><b>한 줄 일기</b>'+
          (d.data||[]).map(x=>'<div class="recordAnswer"><b>'+escapeHtml(x.person)+'</b>'+escapeHtml(x.diary)+'</div>').join("")+
          '</div>';
     }
@@ -1433,7 +1498,7 @@ async function openPhotoRecord(day,person,encodedUrl){
     }
 
     if((mi.data||[]).length){
-      h+='<div class="recordSection"><b>🎲 그날 미션</b>'+
+      h+='<div class="recordSection"><b>그날 미션</b>'+
          '<div class="status">'+(mi.data||[]).map(x=>escapeHtml(x.person)+(x.done?" 완료 ✓":" 미완료")).join(" · ")+'</div></div>';
     }
 
