@@ -919,6 +919,200 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
   .archiveRecordBtn,.archiveToggle{font-size:11px!important;padding:9px 8px!important}
 }
 
+
+/* ===== OUR DAY v5.29 editorial day record detail ===== */
+.recordSheet{
+  background:var(--bg)!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+.recordTop{
+  padding:18px 18px 14px!important;
+  background:rgba(247,245,239,.96)!important;
+  backdrop-filter:blur(14px)!important;
+  border-bottom:1px solid var(--line)!important;
+  position:sticky!important;
+  top:0!important;
+  z-index:3!important;
+}
+.recordTop > div:first-child{
+  min-width:0!important;
+}
+#recordModalDate{
+  display:block!important;
+  font-family:var(--mood-font)!important;
+  font-size:22px!important;
+  line-height:1.25!important;
+  color:#2f352d!important;
+}
+#recordModalOwner{
+  margin-top:4px!important;
+}
+.recordTop button{
+  flex:0 0 auto!important;
+  border:1px solid var(--line)!important;
+  background:#fffdf8!important;
+  color:#596153!important;
+  border-radius:12px!important;
+  padding:8px 11px!important;
+}
+#recordModalContent{
+  padding:16px 16px 24px!important;
+}
+.recordCover{
+  position:relative!important;
+  overflow:hidden!important;
+  border-radius:22px!important;
+  margin-bottom:14px!important;
+  min-height:220px!important;
+  background:linear-gradient(135deg,#e7e5dc,#dbe3d4)!important;
+  border:1px solid var(--line)!important;
+}
+.recordCover img{
+  width:100%!important;
+  height:100%!important;
+  min-height:220px!important;
+  max-height:380px!important;
+  object-fit:cover!important;
+  display:block!important;
+}
+.recordCoverShade{
+  position:absolute!important;
+  inset:auto 0 0 0!important;
+  padding:44px 16px 15px!important;
+  background:linear-gradient(transparent,rgba(28,31,27,.62))!important;
+  color:#fff!important;
+}
+.recordCoverShade b{
+  display:block!important;
+  font-family:var(--mood-font)!important;
+  font-size:22px!important;
+  line-height:1.3!important;
+}
+.recordCoverShade span{
+  font-size:12px!important;
+  opacity:.92!important;
+}
+.recordSection{
+  margin-top:12px!important;
+  padding:16px!important;
+  border-radius:20px!important;
+  background:#fffdf8!important;
+  border:1px solid var(--line)!important;
+  box-shadow:0 8px 24px rgba(62,66,57,.045)!important;
+}
+.recordSection > b{
+  display:block!important;
+  margin-bottom:10px!important;
+  font-family:var(--mood-font)!important;
+  font-size:17px!important;
+  color:#384235!important;
+}
+.recordQuestion{
+  font-family:var(--mood-font)!important;
+  font-size:20px!important;
+  line-height:1.55!important;
+  font-weight:700!important;
+  color:#313630!important;
+}
+.recordPair{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+}
+.recordAnswer{
+  background:#f8f6ef!important;
+  border:1px solid #e8e5dc!important;
+  border-radius:16px!important;
+  padding:13px!important;
+  line-height:1.55!important;
+}
+.recordAnswer b{
+  display:block!important;
+  margin-bottom:5px!important;
+  color:#566251!important;
+  font-size:12px!important;
+}
+.recordMoodGrid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+}
+.recordMood{
+  text-align:center!important;
+  padding:13px 9px!important;
+  border-radius:16px!important;
+  background:#f0f4ec!important;
+  border:1px solid #e0e7da!important;
+}
+.recordMood b{
+  display:block!important;
+  font-size:12px!important;
+  margin-bottom:5px!important;
+  color:#697463!important;
+}
+.recordMood span{
+  font-size:14px!important;
+  font-weight:700!important;
+  color:#45513f!important;
+}
+.recordDiary{
+  padding:13px!important;
+  border-radius:16px!important;
+  background:#fbf9f4!important;
+  border-left:3px solid #a9ba9d!important;
+  line-height:1.6!important;
+}
+.recordDiary + .recordDiary{margin-top:8px!important}
+.recordDiary b{
+  display:block!important;
+  margin-bottom:4px!important;
+  font-size:12px!important;
+  color:#6a7465!important;
+}
+.recordPhotoGrid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+.recordSong{
+  display:grid!important;
+  grid-template-columns:1fr auto!important;
+  gap:12px!important;
+  align-items:center!important;
+}
+.recordSongMain{min-width:0!important}
+.recordSong .songArchiveTitle{
+  font-family:var(--mood-font)!important;
+  font-size:20px!important;
+}
+.recordSongIcon{
+  width:52px!important;
+  height:52px!important;
+  border-radius:50%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:#e4eadf!important;
+  color:#60705a!important;
+  font-size:22px!important;
+  flex:0 0 auto!important;
+}
+.recordMiniLabel{
+  font-size:11px!important;
+  color:#8b9187!important;
+  margin-bottom:5px!important;
+  letter-spacing:.04em!important;
+}
+@media(max-width:560px){
+  #recordModalContent{padding:12px 12px 22px!important}
+  .recordTop{padding:15px 14px 12px!important}
+  #recordModalDate{font-size:20px!important}
+  .recordCover{min-height:190px!important;border-radius:18px!important}
+  .recordCover img{min-height:190px!important;max-height:300px!important}
+  .recordSection{padding:14px!important;border-radius:18px!important}
+  .recordPair,.recordMoodGrid{grid-template-columns:1fr 1fr!important;gap:7px!important}
+  .recordAnswer{padding:11px!important}
+}
+
 </style></head><body><main class="wrap">
 <div class="top"><div><div class="brand">OUR DAY</div></div><div class="muted" id="today"></div></div>
 <section class="hero" id="hero"><div>지지은 한국복귀까지</div><h1 id="dday">D-?</h1><div id="remain"></div><div style="margin-top:5px;font-size:12px;opacity:.9">귀국일 · 2027.01.31</div><div class="clocks"><div class="clock">🇰🇷 한국<b id="kr">--:--</b></div><div class="clock">🇧🇪 벨기에<b id="be">--:--</b></div></div></section>
@@ -1433,8 +1627,8 @@ async function openPhotoRecord(day,person,encodedUrl){
 async function openDayRecord(day,focusUrl="",owner=""){
   recordModal.classList.add("open");
   document.body.style.overflow="hidden";
-  recordModalDate.textContent=formatArchiveDate(day)+" · 그날의 기록";
-  recordModalOwner.textContent=owner?owner+"이 올린 사진에서 열었어":"하루 전체 기록";
+  recordModalDate.textContent=formatArchiveDate(day);
+  recordModalOwner.textContent=owner?owner+"이 올린 사진에서 열었어":"둘이 함께 남긴 하루";
   recordModalContent.innerHTML='<div class="status">기록 불러오는 중...</div>';
 
   try{
@@ -1447,59 +1641,70 @@ async function openDayRecord(day,focusUrl="",owner=""){
       sb.from("daily_photos").select("*").eq("day",day).order("person",{ascending:true})
     ]);
 
+    const answers=a.data||[];
+    const moods=m.data||[];
+    const diaries=d.data||[];
+    const missions=mi.data||[];
     const photos=p.data||[];
     let h="";
 
     if(photos.length){
-      h+='<div class="recordSection"><b>그날 사진</b><div class="recordPhotoGrid">'+
-        photos.map(x=>'<img src="'+x.url+'" alt="'+escapeHtml(day+' '+x.person+' 사진')+'" loading="lazy">').join("")+
-        '</div></div>';
-    }else if(focusUrl){
-      h+='<div class="recordHeroPhoto"><img src="'+focusUrl+'" alt="'+day+' 사진"></div>';
+      const cover=focusUrl || photos[0].url;
+      h+='<div class="recordCover"><img src="'+cover+'" alt="'+escapeHtml(day+' 사진')+'">'+
+         '<div class="recordCoverShade"><span>'+escapeHtml(day)+'</span><b>우리의 하루</b></div></div>';
+      if(photos.length>1){
+        h+='<div class="recordSection"><div class="recordMiniLabel">PHOTOS</div><b>그날 사진 '+photos.length+'장</b>'+
+           '<div class="recordPhotoGrid">'+
+           photos.map(x=>'<img src="'+x.url+'" alt="'+escapeHtml(day+' '+x.person+' 사진')+'" loading="lazy">').join("")+
+           '</div></div>';
+      }
     }
 
-    h+='<div class="recordSection"><b>오늘의 질문</b>'+
-       '<div class="question" style="font-size:16px;margin:0">'+escapeHtml(QUESTIONS[qIndex(day)])+'</div></div>';
+    h+='<div class="recordSection"><div class="recordMiniLabel">TODAY QUESTION</div><b>오늘의 질문</b>'+
+       '<div class="recordQuestion">'+escapeHtml(QUESTIONS[qIndex(day)])+'</div></div>';
 
-    h+='<div class="recordSection"><b>우리 답변</b>';
-    if((a.data||[]).length){
-      h+=(a.data||[]).map(x=>
+    h+='<div class="recordSection"><div class="recordMiniLabel">OUR ANSWERS</div><b>우리 답변</b>';
+    if(answers.length){
+      h+='<div class="recordPair">'+answers.map(x=>
         '<div class="recordAnswer"><b>'+escapeHtml(x.person)+'</b>'+escapeHtml(x.answer)+'</div>'
-      ).join("");
+      ).join("")+'</div>';
     }else{
       h+='<div class="status">답변 기록이 없어.</div>';
     }
     h+='</div>';
 
-    h+='<div class="recordSection"><b>그날 기분</b>';
-    if((m.data||[]).length){
-      h+=(m.data||[]).map(x=>'<div class="recordAnswer">'+escapeHtml(x.person)+' · '+escapeHtml(x.mood)+'</div>').join("");
+    h+='<div class="recordSection"><div class="recordMiniLabel">MOOD</div><b>그날 기분</b>';
+    if(moods.length){
+      h+='<div class="recordMoodGrid">'+moods.map(x=>
+        '<div class="recordMood"><b>'+escapeHtml(x.person)+'</b><span>'+escapeHtml(x.mood)+'</span></div>'
+      ).join("")+'</div>';
     }else{
       h+='<div class="status">기분 기록이 없어.</div>';
     }
     h+='</div>';
 
-    if((d.data||[]).length){
-      h+='<div class="recordSection"><b>한 줄 일기</b>'+
-         (d.data||[]).map(x=>'<div class="recordAnswer"><b>'+escapeHtml(x.person)+'</b>'+escapeHtml(x.diary)+'</div>').join("")+
+    if(diaries.length){
+      h+='<div class="recordSection"><div class="recordMiniLabel">ONE LINE DIARY</div><b>한 줄 일기</b>'+
+         diaries.map(x=>'<div class="recordDiary"><b>'+escapeHtml(x.person)+'</b>'+escapeHtml(x.diary)+'</div>').join("")+
          '</div>';
     }
 
     if(song.data){
       const s=song.data;
       const tags=(s.mood_tags||[]).map(t=>'<span class="songTag">'+escapeHtml(t)+'</span>').join("");
-      h+='<div class="recordSection"><b>오늘의 우리 노래</b>'+
+      h+='<div class="recordSection"><div class="recordMiniLabel">OUR SONG</div><b>오늘의 우리 노래</b>'+
+         '<div class="recordSong"><div class="recordSongMain">'+
          '<div class="songMood">'+tags+'</div>'+
          '<div class="songArchiveTitle">'+escapeHtml(s.song_title||"")+'</div>'+
          '<div class="songArchiveArtist">'+escapeHtml(s.artist||"")+'</div>'+
          '<div class="songReason">'+escapeHtml(s.reason||"")+'</div>'+
          (s.youtube_url?'<a class="youtubeBtn" href="'+s.youtube_url+'" target="_blank" rel="noopener">YouTube에서 듣기 ▶</a>':'')+
-         '</div>';
+         '</div><div class="recordSongIcon">♪</div></div></div>';
     }
 
-    if((mi.data||[]).length){
-      h+='<div class="recordSection"><b>그날 미션</b>'+
-         '<div class="status">'+(mi.data||[]).map(x=>escapeHtml(x.person)+(x.done?" 완료 ✓":" 미완료")).join(" · ")+'</div></div>';
+    if(missions.length){
+      h+='<div class="recordSection"><div class="recordMiniLabel">MISSION</div><b>그날 미션</b>'+
+         '<div class="status">'+missions.map(x=>escapeHtml(x.person)+(x.done?" 완료 ✓":" 미완료")).join(" · ")+'</div></div>';
     }
 
     recordModalContent.innerHTML=h;
