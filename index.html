@@ -815,6 +815,45 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
 .photoViewerHint{font-size:12px;opacity:.72;margin-top:5px}
 @media(min-width:760px){#galleryGrid{columns:3}}
 
+
+/* ===== OUR DAY v5.26 archive calendar + date jump ===== */
+.archiveCalendarWrap{
+  margin:0 0 14px;padding:13px;background:#fbf9f3;border:1px solid #e4e3da;border-radius:20px;
+}
+.archiveCalendarHead{
+  display:grid;grid-template-columns:42px 1fr 42px;align-items:center;gap:8px;margin-bottom:10px;
+}
+.archiveCalendarHead strong{
+  text-align:center;font-family:var(--mood-font);font-size:20px;font-weight:700;
+}
+.archiveCalendarHead button{
+  border:0;background:#edf1e9;color:#5d6d57;border-radius:12px;height:36px;font-size:20px;cursor:pointer;
+}
+.archiveWeek,.archiveCalendar{
+  display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;
+}
+.archiveWeek span{
+  text-align:center;font-size:10px;color:#8a9086;padding:3px 0;
+}
+.archiveCalDay{
+  position:relative;aspect-ratio:1/1;border:0;border-radius:12px;background:transparent;
+  color:#555d51;font-size:13px;cursor:default;
+}
+.archiveCalDay.empty{visibility:hidden}
+.archiveCalDay.has{background:#f0f4ec;cursor:pointer;font-weight:700}
+.archiveCalDay.today{outline:1px solid #bacab0}
+.archiveCalDay.selected{background:#dce8d4;color:#40563a}
+.archiveCalDay .calDot{
+  position:absolute;width:4px;height:4px;border-radius:50%;background:#8da780;
+  left:50%;bottom:4px;transform:translateX(-50%);
+}
+.archiveJumpNote{font-size:11px;color:#858c82;text-align:center;margin-top:9px}
+.archiveDay.jumpFocus{animation:archiveFocus 1.3s ease}
+@keyframes archiveFocus{
+  0%,100%{box-shadow:0 8px 24px rgba(51,54,48,.055)}
+  35%{box-shadow:0 0 0 3px rgba(159,197,143,.42),0 12px 28px rgba(51,54,48,.10)}
+}
+
 </style></head><body><main class="wrap">
 <div class="top"><div><div class="brand">OUR DAY</div></div><div class="muted" id="today"></div></div>
 <section class="hero" id="hero"><div>지지은 한국복귀까지</div><h1 id="dday">D-?</h1><div id="remain"></div><div style="margin-top:5px;font-size:12px;opacity:.9">귀국일 · 2027.01.31</div><div class="clocks"><div class="clock">🇰🇷 한국<b id="kr">--:--</b></div><div class="clock">🇧🇪 벨기에<b id="be">--:--</b></div></div></section>
@@ -893,6 +932,16 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
 <div id="archiveView" style="display:none">
   <section class="card">
     <div class="archiveFeedHead"><div><strong>기록</strong><div class="status">우리의 하루를 최근 기록부터 이어서 볼 수 있어.</div></div></div>
+    <div class="archiveCalendarWrap">
+      <div class="archiveCalendarHead">
+        <button onclick="moveArchiveCalendar(-1)" aria-label="이전 달">‹</button>
+        <strong id="archiveMonthLabel"></strong>
+        <button onclick="moveArchiveCalendar(1)" aria-label="다음 달">›</button>
+      </div>
+      <div class="archiveWeek"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+      <div class="archiveCalendar" id="archiveCalendar"></div>
+      <div class="archiveJumpNote">기록이 있는 날짜를 누르면 아래 해당 기록으로 바로 이동해.</div>
+    </div>
     <div class="archiveToolbar">
       <button class="archiveChip active" onclick="setArchiveFilter('all',this)">전체</button>
       <button class="archiveChip" onclick="setArchiveFilter('question',this)">질문</button>
@@ -1076,7 +1125,7 @@ async function loadArchiveFeed(){
       if(archiveFilter==="photo"&&!photos.length)return;
       if(archiveFilter==="song"&&!song)return;
 
-      let h='<article class="archiveDay">';
+      let h='<article class="archiveDay" id="archive-day-'+day+'" data-day="'+day+'">';
       h+='<div class="archiveDayDate"><b>'+escapeHtml(day)+'</b><span class="status">질문 '+(qIndex(day)+1)+'/365</span></div>';
       h+='<div class="archiveQ">'+escapeHtml(QUESTIONS[qIndex(day)]||"")+'</div>';
 
@@ -1109,12 +1158,91 @@ async function loadArchiveFeed(){
 
     archiveFeed.innerHTML=cards.join("");
     archiveFeedStatus.textContent=cards.length?cards.length+"일의 기록":"조건에 맞는 기록이 없어.";
+    if(document.getElementById("archiveCalendar")) renderArchiveCalendar();
   }catch(e){
     console.error(e);
     archiveFeed.innerHTML="";
     archiveFeedStatus.textContent="기록을 불러오지 못했어: "+(e.message||String(e));
   }
 }
+
+
+let archiveCalDate=new Date();
+archiveCalDate=new Date(archiveCalDate.getFullYear(),archiveCalDate.getMonth(),1);
+let archiveSelectedDay="";
+
+function moveArchiveCalendar(offset){
+  archiveCalDate=new Date(archiveCalDate.getFullYear(),archiveCalDate.getMonth()+offset,1);
+  renderArchiveCalendar();
+}
+
+async function renderArchiveCalendar(){
+  const label=document.getElementById("archiveMonthLabel");
+  const grid=document.getElementById("archiveCalendar");
+  if(!label||!grid||!sb)return;
+
+  label.textContent=new Intl.DateTimeFormat("ko-KR",{year:"numeric",month:"long"}).format(archiveCalDate);
+  grid.innerHTML='<div class="status" style="grid-column:1/-1;text-align:center">달력 불러오는 중...</div>';
+
+  const y=archiveCalDate.getFullYear(),m=archiveCalDate.getMonth();
+  const start=new Date(y,m,1),end=new Date(y,m+1,0);
+  const from=key(start),to=key(end);
+
+  const rs=await Promise.all(
+    ["daily_answers","daily_moods","daily_diaries","daily_photos","daily_missions","daily_songs"]
+      .map(t=>sb.from(t).select("day").gte("day",from).lte("day",to))
+  );
+  const has=new Set(rs.flatMap(r=>(r.data||[]).map(x=>x.day).filter(Boolean)));
+
+  grid.innerHTML="";
+  for(let i=0;i<start.getDay();i++){
+    const e=document.createElement("button");
+    e.className="archiveCalDay empty";
+    e.tabIndex=-1;
+    grid.appendChild(e);
+  }
+
+  for(let d=1;d<=end.getDate();d++){
+    const ds=key(new Date(y,m,d));
+    const b=document.createElement("button");
+    b.className="archiveCalDay"+(has.has(ds)?" has":"")+(ds===key()?" today":"")+(ds===archiveSelectedDay?" selected":"");
+    b.textContent=d;
+    if(has.has(ds)){
+      const dot=document.createElement("span");
+      dot.className="calDot";
+      b.appendChild(dot);
+      b.onclick=()=>jumpToArchiveDay(ds);
+      b.title=ds+" 기록 보기";
+    }else{
+      b.disabled=true;
+    }
+    grid.appendChild(b);
+  }
+}
+
+async function jumpToArchiveDay(ds){
+  archiveSelectedDay=ds;
+
+  // 선택한 날짜가 현재 필터에서 숨겨져 있으면 전체 보기로 전환한다.
+  let target=document.getElementById("archive-day-"+ds);
+  if(!target){
+    archiveFilter="all";
+    document.querySelectorAll(".archiveChip").forEach(x=>x.classList.remove("active"));
+    const allBtn=document.querySelector('.archiveChip[onclick*="'+"'all'"+'"]');
+    if(allBtn) allBtn.classList.add("active");
+    await loadArchiveFeed();
+    target=document.getElementById("archive-day-"+ds);
+  }
+
+  renderArchiveCalendar();
+  if(target){
+    target.scrollIntoView({behavior:"smooth",block:"start"});
+    target.classList.remove("jumpFocus");
+    void target.offsetWidth;
+    target.classList.add("jumpFocus");
+  }
+}
+
 
 let photoViewerItems=[];
 let photoViewerIndex=0;
@@ -1751,7 +1879,7 @@ function showTab(t){
   updateCoupleDays();
   renderAnniversaries();
   if(t==="home") loadHomeStatus();
-  if(t==="archive") loadArchiveFeed();
+  if(t==="archive"){loadArchiveFeed();renderArchiveCalendar();}
   if(t==="gallery") loadGallery();
   if(t==="songs") loadSongArchive();
   window.scrollTo({top:0,behavior:"smooth"});
