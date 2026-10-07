@@ -854,6 +854,31 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
   35%{box-shadow:0 0 0 3px rgba(159,197,143,.42),0 12px 28px rgba(51,54,48,.10)}
 }
 
+
+/* ===== OUR DAY v5.27 compact expandable records ===== */
+.archiveDayDate b{font-family:var(--mood-font);font-size:19px!important}
+.archiveSummary{
+  display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px;
+}
+.archiveSummary span{
+  background:#f0f4ec;border:1px solid #e1e7dc;color:#667160;
+  border-radius:999px;padding:6px 9px;font-size:11px;font-weight:700;
+}
+.archiveDetails{display:none;margin-top:8px}
+.archiveDay.expanded .archiveDetails{display:block}
+.archiveToggle{
+  width:100%;margin-top:10px;border:0;background:#eef3ea;color:#53634d;
+  border-radius:13px;padding:9px 12px;font-size:12px;font-weight:800;cursor:pointer;
+}
+.archiveToggle:after{content:"  ↓"}
+.archiveDay.expanded .archiveToggle:after{content:"  ↑"}
+.archiveDay.expanded .archiveToggle{background:#e5ede0}
+.archiveDay.jumpFocus{scroll-margin-top:88px}
+.viewerRecordBtn{
+  width:auto!important;min-width:76px!important;padding:0 12px!important;
+  font-size:12px!important;font-weight:800!important;
+}
+
 </style></head><body><main class="wrap">
 <div class="top"><div><div class="brand">OUR DAY</div></div><div class="muted" id="today"></div></div>
 <section class="hero" id="hero"><div>지지은 한국복귀까지</div><h1 id="dday">D-?</h1><div id="remain"></div><div style="margin-top:5px;font-size:12px;opacity:.9">귀국일 · 2027.01.31</div><div class="clocks"><div class="clock">🇰🇷 한국<b id="kr">--:--</b></div><div class="clock">🇧🇪 벨기에<b id="be">--:--</b></div></div></section>
@@ -956,7 +981,7 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
 <div id="galleryView" style="display:none">
   <section class="card">
     <h2>사진</h2>
-    <div class="status" style="margin-bottom:12px">사진 비율을 살려 감성적으로 모아보고, 누르면 좌우로 계속 넘겨볼 수 있어.</div>
+    
     <div class="galleryGrid" id="galleryGrid"></div>
     <div class="status" id="galleryStatus"></div>
   </section>
@@ -977,7 +1002,7 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
   <div class="photoViewerTop">
     <button onclick="closePhotoViewer()">✕</button>
     <div id="photoViewerCounter">1 / 1</div>
-    <button onclick="openViewerRecord()">⋯</button>
+    <button class="viewerRecordBtn" onclick="openViewerRecord()">그날 기록</button>
   </div>
   <div class="photoViewerStage" id="photoViewerStage"><img id="photoViewerImage" alt="우리 사진"></div>
   <div class="photoViewerBottom">
@@ -1090,6 +1115,25 @@ function setArchiveFilter(filter,btn){
   loadArchiveFeed();
 }
 
+
+function formatArchiveDate(day){
+  try{
+    const d=new Date(day+"T00:00:00+09:00");
+    return new Intl.DateTimeFormat("ko-KR",{month:"long",day:"numeric",weekday:"short"}).format(d);
+  }catch(_e){
+    return day;
+  }
+}
+
+function toggleArchiveDay(day,forceOpen=false){
+  const el=document.getElementById("archive-day-"+day);
+  if(!el)return;
+  const shouldOpen=forceOpen || !el.classList.contains("expanded");
+  el.classList.toggle("expanded",shouldOpen);
+  const btn=el.querySelector(".archiveToggle");
+  if(btn) btn.textContent=shouldOpen?"접기":"더보기";
+}
+
 async function loadArchiveFeed(){
   if(!sb){archiveFeedStatus.textContent="Supabase 연결이 필요해.";return}
   archiveFeedStatus.textContent="기록 불러오는 중...";
@@ -1126,31 +1170,47 @@ async function loadArchiveFeed(){
       if(archiveFilter==="song"&&!song)return;
 
       let h='<article class="archiveDay" id="archive-day-'+day+'" data-day="'+day+'">';
-      h+='<div class="archiveDayDate"><b>'+escapeHtml(day)+'</b><span class="status">질문 '+(qIndex(day)+1)+'/365</span></div>';
+      h+='<div class="archiveDayDate"><b>'+escapeHtml(formatArchiveDate(day))+'</b><span class="status">질문 '+(qIndex(day)+1)+'/365</span></div>';
       h+='<div class="archiveQ">'+escapeHtml(QUESTIONS[qIndex(day)]||"")+'</div>';
 
       if(answers.length){
         h+='<div class="archiveBlock"><b>우리 답변</b>'+answers.map(x=>escapeHtml(x.person)+': '+escapeHtml(x.answer)).join('<br>')+'</div>';
       }
-      if(moods.length){
-        h+='<div class="archiveBlock"><b>기분</b>'+moods.map(x=>escapeHtml(x.person)+': '+escapeHtml(x.mood)).join(' · ')+'</div>';
+
+      const summary=[];
+      if(moods.length) summary.push('기분 '+moods.length);
+      if(diaries.length) summary.push('일기 '+diaries.length);
+      if(photos.length) summary.push('사진 '+photos.length);
+      if(song) summary.push('노래 1');
+      if(missions.length) summary.push('미션 '+missions.length);
+      if(summary.length){
+        h+='<div class="archiveSummary">'+summary.map(x=>'<span>'+escapeHtml(x)+'</span>').join('')+'</div>';
       }
-      if(diaries.length){
-        h+='<div class="archiveBlock"><b>한 줄 일기</b>'+diaries.map(x=>escapeHtml(x.person)+': '+escapeHtml(x.diary)).join('<br>')+'</div>';
-      }
-      if(photos.length){
-        h+='<div class="archivePhotos">'+photos.map(x=>
-          '<div class="archiveThumb" data-day="'+day+'" data-person="'+escapeHtml(x.person)+'" data-url="'+encodeURIComponent(x.url)+'" onclick="openPhotoRecord(this.dataset.day,this.dataset.person,this.dataset.url)"><img src="'+x.url+'" loading="lazy"></div>'
-        ).join("")+'</div>';
-      }
-      if(song){
-        h+='<div class="archiveBlock archiveSong"><b>오늘의 우리 노래</b>'+
-          escapeHtml(song.song_title||"")+' · '+escapeHtml(song.artist||"")+
-          (song.youtube_url?'<br><a href="'+song.youtube_url+'" target="_blank" rel="noopener">YouTube에서 듣기 ▶</a>':'')+
-          '</div>';
-      }
-      if(missions.length){
-        h+='<div class="archiveBlock"><b>미션</b>'+missions.map(x=>escapeHtml(x.person)+(x.done?' 완료 ✓':' 미완료')).join(' · ')+'</div>';
+
+      if(moods.length||diaries.length||photos.length||song||missions.length){
+        h+='<div class="archiveDetails">';
+        if(moods.length){
+          h+='<div class="archiveBlock"><b>기분</b>'+moods.map(x=>escapeHtml(x.person)+': '+escapeHtml(x.mood)).join(' · ')+'</div>';
+        }
+        if(diaries.length){
+          h+='<div class="archiveBlock"><b>한 줄 일기</b>'+diaries.map(x=>escapeHtml(x.person)+': '+escapeHtml(x.diary)).join('<br>')+'</div>';
+        }
+        if(photos.length){
+          h+='<div class="archivePhotos">'+photos.map(x=>
+            '<div class="archiveThumb" data-day="'+day+'" data-person="'+escapeHtml(x.person)+'" data-url="'+encodeURIComponent(x.url)+'" onclick="openPhotoRecord(this.dataset.day,this.dataset.person,this.dataset.url)"><img src="'+x.url+'" loading="lazy"></div>'
+          ).join("")+'</div>';
+        }
+        if(song){
+          h+='<div class="archiveBlock archiveSong"><b>오늘의 우리 노래</b>'+
+            escapeHtml(song.song_title||"")+' · '+escapeHtml(song.artist||"")+
+            (song.youtube_url?'<br><a href="'+song.youtube_url+'" target="_blank" rel="noopener">YouTube에서 듣기 ▶</a>':'')+
+            '</div>';
+        }
+        if(missions.length){
+          h+='<div class="archiveBlock"><b>미션</b>'+missions.map(x=>escapeHtml(x.person)+(x.done?' 완료 ✓':' 미완료')).join(' · ')+'</div>';
+        }
+        h+='</div>';
+        h+='<button class="archiveToggle" onclick="toggleArchiveDay(\''+day+'\')">더보기</button>';
       }
       h+='</article>';
       cards.push(h);
@@ -1236,6 +1296,7 @@ async function jumpToArchiveDay(ds){
 
   renderArchiveCalendar();
   if(target){
+    toggleArchiveDay(ds,true);
     target.scrollIntoView({behavior:"smooth",block:"start"});
     target.classList.remove("jumpFocus");
     void target.offsetWidth;
