@@ -712,6 +712,109 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
 }
 .profileHint:empty{display:none!important}
 
+
+/* ===== OUR DAY v5.25 continuous archive + emotional gallery ===== */
+.archiveFeedHead{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:12px;
+}
+.archiveFeedHead strong{
+  font-family:Georgia,"Times New Roman",serif;font-size:30px;font-weight:500;
+}
+.archiveToolbar{
+  display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.archiveToolbar::-webkit-scrollbar{display:none}
+.archiveChip{
+  flex:0 0 auto;border:1px solid #e2e1d8;background:#fffdf8;color:#6b7167;
+  border-radius:999px;padding:8px 13px;font-size:13px;font-weight:700;
+}
+.archiveChip.active{background:#dfe8d7;border-color:#d1ddc8;color:#4f6747}
+.archiveFeed{display:flex;flex-direction:column;gap:14px}
+.archiveDay{
+  position:relative;background:linear-gradient(180deg,#fffdf8 0%,#faf8f2 100%);
+  border:1px solid #e4e3da;border-radius:24px;padding:15px 15px 16px;
+  box-shadow:0 8px 24px rgba(51,54,48,.055);
+}
+.archiveDay:before{
+  content:"";position:absolute;left:-1px;top:24px;width:4px;height:34px;border-radius:0 4px 4px 0;background:#b9c9ae;
+}
+.archiveDayDate{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.archiveDayDate b{font-size:17px}
+.archiveQ{font-size:17px;font-weight:800;line-height:1.48;margin:5px 0 10px}
+.archiveBlock{
+  margin-top:8px;padding:10px 11px;background:rgba(241,244,236,.72);
+  border-radius:15px;font-size:13px;line-height:1.55;
+}
+.archiveBlock b{display:block;margin-bottom:4px}
+.archivePhotos{
+  display:flex;gap:8px;overflow-x:auto;margin-top:9px;padding-bottom:2px;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.archivePhotos::-webkit-scrollbar{display:none}
+.archiveThumb{
+  width:102px;height:102px;flex:0 0 auto;border-radius:16px;overflow:hidden;
+  border:1px solid #e2e1d8;background:#ebe8df;cursor:pointer;
+}
+.archiveThumb img{width:100%;height:100%;object-fit:cover;display:block}
+.archiveSong a{display:inline-block;margin-top:5px;color:#5f7f52;font-weight:700;text-decoration:none}
+
+/* photo masonry */
+#galleryGrid{
+  display:block!important;
+  columns:2;
+  column-gap:10px;
+}
+.galleryItem{
+  display:block!important;
+  width:100%!important;
+  margin:0 0 10px!important;
+  break-inside:avoid;
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+  background:#ebe8df;
+}
+.galleryItem img{width:100%!important;height:auto!important;display:block!important;object-fit:cover}
+.galleryItem:nth-child(6n+1) img{aspect-ratio:4/5}
+.galleryItem:nth-child(6n+2) img{aspect-ratio:1/1}
+.galleryItem:nth-child(6n+3) img{aspect-ratio:16/10}
+.galleryItem:nth-child(6n+4) img{aspect-ratio:3/4}
+.galleryItem:nth-child(6n+5) img{aspect-ratio:1/1}
+.galleryItem:nth-child(6n+6) img{aspect-ratio:5/4}
+.galleryMeta{
+  position:absolute!important;left:0;right:0;bottom:0!important;
+  padding:28px 10px 9px!important;color:#fff!important;
+  background:linear-gradient(transparent,rgba(25,28,23,.56))!important;
+}
+.photoViewer{
+  position:fixed;inset:0;z-index:250;background:rgba(16,18,15,.96);display:none;
+  color:#fff;overflow:hidden;
+}
+.photoViewer.open{display:block}
+.photoViewerTop{
+  position:absolute;z-index:3;top:0;left:0;right:0;padding:15px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(rgba(0,0,0,.48),transparent);
+}
+.photoViewerTop button{
+  border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:999px;
+  width:40px;height:40px;font-size:18px;cursor:pointer;
+}
+.photoViewerStage{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;touch-action:pan-y;
+}
+.photoViewerStage img{
+  max-width:100%;max-height:78vh;object-fit:contain;user-select:none;-webkit-user-drag:none;
+}
+.photoViewerBottom{
+  position:absolute;z-index:3;left:0;right:0;bottom:0;padding:42px 18px 24px;
+  background:linear-gradient(transparent,rgba(0,0,0,.72));
+}
+.photoViewerCaption{font-size:15px;font-weight:700}
+.photoViewerHint{font-size:12px;opacity:.72;margin-top:5px}
+@media(min-width:760px){#galleryGrid{columns:3}}
+
 </style></head><body><main class="wrap">
 <div class="top"><div><div class="brand">OUR DAY</div></div><div class="muted" id="today"></div></div>
 <section class="hero" id="hero"><div>지지은 한국복귀까지</div><h1 id="dday">D-?</h1><div id="remain"></div><div style="margin-top:5px;font-size:12px;opacity:.9">귀국일 · 2027.01.31</div><div class="clocks"><div class="clock">🇰🇷 한국<b id="kr">--:--</b></div><div class="clock">🇧🇪 벨기에<b id="be">--:--</b></div></div></section>
@@ -787,11 +890,24 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
 <div id="todayView" style="display:none"><section class="card"><h2>오늘의 질문 <span class="muted" id="qno"></span></h2><div class="question" id="question"></div><textarea id="answer" placeholder="내 답을 남겨봐"></textarea><button class="btn" onclick="saveAnswer()" style="margin-top:8px">답 저장</button><div id="answers"></div></section><section class="card"><h2>지금 기분</h2><div class="row" id="moodBtns"></div><div class="status" id="moodShared"></div></section>
 <section class="card"><h2>오늘의 한 줄 일기</h2><div class="status" style="margin-bottom:10px">각자 한 줄씩 남겨봐. 둘 다 작성하면 서로의 일기가 공개돼.</div><textarea id="diaryInput" maxlength="160" placeholder="오늘 남기고 싶은 한 줄"></textarea><button class="btn" onclick="saveDiary()" style="margin-top:8px">일기 저장</button><div class="status" id="diaryStatus"></div><div id="diaryShared"></div></section>
 <section class="card"><h2>오늘의 우리 노래</h2><div id="songArea"><div class="songLocked">둘 다 질문·기분·한 줄 일기를 남기면 오늘의 노래를 추천받을 수 있어.</div></div></section><section class="card"><h2>오늘 한 장</h2><input id="photoInput" type="file" accept="image/*"><button class="btn" onclick="uploadPhoto()" style="margin-top:8px">사진 올리기</button><div class="row" id="photos" style="margin-top:12px"></div><div class="status" id="photoStatus"></div><div class="status" style="margin-top:4px">사진 업로드가 실패하면 오류 문구가 여기에 표시돼.</div></section><section class="card"><h2>오늘의 미션</h2><div class="question" id="mission"></div><button class="btn" onclick="completeMission()">완료</button><div class="status" id="missionStatus"></div></section></div>
-<div id="archiveView" style="display:none"><section class="card"><div class="archiveHead"><button onclick="moveMonth(-1)">‹</button><strong id="monthLabel"></strong><button onclick="moveMonth(1)">›</button></div><div class="week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div><div class="calendar" id="calendar"></div><div id="archiveDetail" style="margin-top:14px"></div></section></div>
+<div id="archiveView" style="display:none">
+  <section class="card">
+    <div class="archiveFeedHead"><div><strong>기록</strong><div class="status">우리의 하루를 최근 기록부터 이어서 볼 수 있어.</div></div></div>
+    <div class="archiveToolbar">
+      <button class="archiveChip active" onclick="setArchiveFilter('all',this)">전체</button>
+      <button class="archiveChip" onclick="setArchiveFilter('question',this)">질문</button>
+      <button class="archiveChip" onclick="setArchiveFilter('diary',this)">일기</button>
+      <button class="archiveChip" onclick="setArchiveFilter('photo',this)">사진</button>
+      <button class="archiveChip" onclick="setArchiveFilter('song',this)">노래</button>
+    </div>
+    <div class="archiveFeed" id="archiveFeed"></div>
+    <div class="status" id="archiveFeedStatus" style="margin-top:10px"></div>
+  </section>
+</div>
 <div id="galleryView" style="display:none">
   <section class="card">
     <h2>사진</h2>
-    <div class="status" style="margin-bottom:12px">사진을 누르면 그날의 질문·답변·기분·노래까지 같이 볼 수 있어.</div>
+    <div class="status" style="margin-bottom:12px">사진 비율을 살려 감성적으로 모아보고, 누르면 좌우로 계속 넘겨볼 수 있어.</div>
     <div class="galleryGrid" id="galleryGrid"></div>
     <div class="status" id="galleryStatus"></div>
   </section>
@@ -805,6 +921,20 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
     <div class="status" id="songArchiveStatus"></div>
   </section>
 </div>
+</div>
+
+
+<div class="photoViewer" id="photoViewer">
+  <div class="photoViewerTop">
+    <button onclick="closePhotoViewer()">✕</button>
+    <div id="photoViewerCounter">1 / 1</div>
+    <button onclick="openViewerRecord()">⋯</button>
+  </div>
+  <div class="photoViewerStage" id="photoViewerStage"><img id="photoViewerImage" alt="우리 사진"></div>
+  <div class="photoViewerBottom">
+    <div class="photoViewerCaption" id="photoViewerCaption"></div>
+    <div class="photoViewerHint">좌우로 밀어서 다음 사진 보기</div>
+  </div>
 </div>
 
 <div class="recordModal" id="recordModal" onclick="closeRecordModal(event)">
@@ -901,21 +1031,159 @@ async function loadHomeStatus(){
     <div class="notify"><div class="icon">🎲</div><div class="txt">${otherMission?`${other}이 오늘 미션을 완료했어.`:`${other}이 아직 오늘 미션을 완료하지 않았어.`}</div></div>
   `;
 }
+
+let archiveFilter="all";
+
+function setArchiveFilter(filter,btn){
+  archiveFilter=filter;
+  document.querySelectorAll(".archiveChip").forEach(x=>x.classList.remove("active"));
+  if(btn) btn.classList.add("active");
+  loadArchiveFeed();
+}
+
+async function loadArchiveFeed(){
+  if(!sb){archiveFeedStatus.textContent="Supabase 연결이 필요해.";return}
+  archiveFeedStatus.textContent="기록 불러오는 중...";
+  try{
+    const [a,m,d,p,mi,s]=await Promise.all([
+      sb.from("daily_answers").select("*").order("day",{ascending:false}),
+      sb.from("daily_moods").select("*").order("day",{ascending:false}),
+      sb.from("daily_diaries").select("*").order("day",{ascending:false}),
+      sb.from("daily_photos").select("*").order("day",{ascending:false}),
+      sb.from("daily_missions").select("*").order("day",{ascending:false}),
+      sb.from("daily_songs").select("*").order("day",{ascending:false})
+    ]);
+
+    const sets=[a,m,d,p,mi,s];
+    const firstError=sets.find(x=>x.error)?.error;
+    if(firstError) throw firstError;
+
+    const days=new Set();
+    sets.forEach(r=>(r.data||[]).forEach(x=>{if(x.day)days.add(x.day)}));
+    const sorted=[...days].sort().reverse();
+    const cards=[];
+
+    sorted.forEach(day=>{
+      const answers=(a.data||[]).filter(x=>x.day===day);
+      const moods=(m.data||[]).filter(x=>x.day===day);
+      const diaries=(d.data||[]).filter(x=>x.day===day);
+      const photos=(p.data||[]).filter(x=>x.day===day);
+      const missions=(mi.data||[]).filter(x=>x.day===day);
+      const song=(s.data||[]).find(x=>x.day===day);
+
+      if(archiveFilter==="question"&&!answers.length)return;
+      if(archiveFilter==="diary"&&!diaries.length)return;
+      if(archiveFilter==="photo"&&!photos.length)return;
+      if(archiveFilter==="song"&&!song)return;
+
+      let h='<article class="archiveDay">';
+      h+='<div class="archiveDayDate"><b>'+escapeHtml(day)+'</b><span class="status">질문 '+(qIndex(day)+1)+'/365</span></div>';
+      h+='<div class="archiveQ">'+escapeHtml(QUESTIONS[qIndex(day)]||"")+'</div>';
+
+      if(answers.length){
+        h+='<div class="archiveBlock"><b>우리 답변</b>'+answers.map(x=>escapeHtml(x.person)+': '+escapeHtml(x.answer)).join('<br>')+'</div>';
+      }
+      if(moods.length){
+        h+='<div class="archiveBlock"><b>기분</b>'+moods.map(x=>escapeHtml(x.person)+': '+escapeHtml(x.mood)).join(' · ')+'</div>';
+      }
+      if(diaries.length){
+        h+='<div class="archiveBlock"><b>한 줄 일기</b>'+diaries.map(x=>escapeHtml(x.person)+': '+escapeHtml(x.diary)).join('<br>')+'</div>';
+      }
+      if(photos.length){
+        h+='<div class="archivePhotos">'+photos.map(x=>
+          '<div class="archiveThumb" data-day="'+day+'" data-person="'+escapeHtml(x.person)+'" data-url="'+encodeURIComponent(x.url)+'" onclick="openPhotoRecord(this.dataset.day,this.dataset.person,this.dataset.url)"><img src="'+x.url+'" loading="lazy"></div>'
+        ).join("")+'</div>';
+      }
+      if(song){
+        h+='<div class="archiveBlock archiveSong"><b>오늘의 우리 노래</b>'+
+          escapeHtml(song.song_title||"")+' · '+escapeHtml(song.artist||"")+
+          (song.youtube_url?'<br><a href="'+song.youtube_url+'" target="_blank" rel="noopener">YouTube에서 듣기 ▶</a>':'')+
+          '</div>';
+      }
+      if(missions.length){
+        h+='<div class="archiveBlock"><b>미션</b>'+missions.map(x=>escapeHtml(x.person)+(x.done?' 완료 ✓':' 미완료')).join(' · ')+'</div>';
+      }
+      h+='</article>';
+      cards.push(h);
+    });
+
+    archiveFeed.innerHTML=cards.join("");
+    archiveFeedStatus.textContent=cards.length?cards.length+"일의 기록":"조건에 맞는 기록이 없어.";
+  }catch(e){
+    console.error(e);
+    archiveFeed.innerHTML="";
+    archiveFeedStatus.textContent="기록을 불러오지 못했어: "+(e.message||String(e));
+  }
+}
+
+let photoViewerItems=[];
+let photoViewerIndex=0;
+let photoViewerStartX=null;
+
+function renderPhotoViewer(){
+  if(!photoViewerItems.length)return;
+  const x=photoViewerItems[photoViewerIndex];
+  photoViewerImage.src=x.url;
+  photoViewerCounter.textContent=(photoViewerIndex+1)+" / "+photoViewerItems.length;
+  photoViewerCaption.textContent=x.day+" · "+x.person;
+}
+function openPhotoViewer(index){
+  photoViewerIndex=index;
+  renderPhotoViewer();
+  photoViewer.classList.add("open");
+  document.body.style.overflow="hidden";
+}
+function closePhotoViewer(){
+  photoViewer.classList.remove("open");
+  document.body.style.overflow="";
+}
+function movePhotoViewer(dir){
+  if(!photoViewerItems.length)return;
+  photoViewerIndex=(photoViewerIndex+dir+photoViewerItems.length)%photoViewerItems.length;
+  renderPhotoViewer();
+}
+function openViewerRecord(){
+  if(!photoViewerItems.length)return;
+  const x=photoViewerItems[photoViewerIndex];
+  closePhotoViewer();
+  openPhotoRecord(x.day,x.person,encodeURIComponent(x.url));
+}
+function setupPhotoViewerGesture(){
+  if(!photoViewerStage||photoViewerStage.dataset.ready==="1")return;
+  photoViewerStage.dataset.ready="1";
+  photoViewerStage.addEventListener("touchstart",e=>{
+    photoViewerStartX=e.touches[0].clientX;
+  },{passive:true});
+  photoViewerStage.addEventListener("touchend",e=>{
+    if(photoViewerStartX===null)return;
+    const dx=e.changedTouches[0].clientX-photoViewerStartX;
+    if(Math.abs(dx)>45) movePhotoViewer(dx<0?1:-1);
+    photoViewerStartX=null;
+  },{passive:true});
+  photoViewerStage.addEventListener("click",e=>{
+    const ratio=e.clientX/window.innerWidth;
+    if(ratio<.3)movePhotoViewer(-1);
+    else if(ratio>.7)movePhotoViewer(1);
+  });
+}
+
 async function loadGallery(){
   if(!sb){galleryStatus.textContent="Supabase 연결이 필요해.";return}
   galleryStatus.textContent="사진 불러오는 중...";
   const {data=[],error}=await sb.from("daily_photos").select("*").order("day",{ascending:false}).order("person",{ascending:true});
   if(error){galleryStatus.textContent=error.message;return}
+  photoViewerItems=data.map(x=>({day:x.day,person:x.person,url:x.url}));
   if(!data.length){galleryGrid.innerHTML="";galleryStatus.textContent="아직 올린 사진이 없어.";return}
 
-  galleryGrid.innerHTML=data.map(x=>{
+  galleryGrid.innerHTML=data.map((x,i)=>{
     const caption=x.day+" · "+x.person;
-    return '<div class="galleryItem" data-url="'+encodeURIComponent(x.url)+'" data-day="'+x.day+'" data-person="'+x.person+'" onclick="openPhotoRecord(this.dataset.day,this.dataset.person,this.dataset.url)">'+
+    return '<div class="galleryItem" onclick="openPhotoViewer('+i+')">'+
       '<img src="'+x.url+'" loading="lazy" alt="'+caption+' 사진">'+
       '<div class="galleryMeta">'+caption+'</div></div>';
   }).join("");
 
   galleryStatus.textContent="총 "+data.length+"장의 사진";
+  setupPhotoViewerGesture();
 }
 
 async function openPhotoRecord(day,person,encodedUrl){
@@ -1483,7 +1751,7 @@ function showTab(t){
   updateCoupleDays();
   renderAnniversaries();
   if(t==="home") loadHomeStatus();
-  if(t==="archive") renderCalendar();
+  if(t==="archive") loadArchiveFeed();
   if(t==="gallery") loadGallery();
   if(t==="songs") loadSongArchive();
   window.scrollTo({top:0,behavior:"smooth"});
