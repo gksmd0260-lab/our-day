@@ -1210,12 +1210,6 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
   </section>
 
   <section class="card">
-    <h2>다음에 만나는 날</h2>
-    <div class="question" style="margin-bottom:5px">2027년 1월 31일</div>
-    <div class="status" id="reunionText">한국복귀일까지 계산 중...</div>
-  </section>
-
-  <section class="card">
     <h2>사용자</h2>
     <div class="status" id="currentUserLabel" style="margin-bottom:10px"></div>
     <button class="btn" style="background:#edf6e8;color:#5f7f52" onclick="changeUser()">하능 / 지은 다시 선택</button>
@@ -1363,8 +1357,6 @@ function renderAnniversaries(){
     const badge=left===0?"오늘":left>0?`D-${left}`:`D+${Math.abs(left)}`;
     return `<div class="annivItem"><div><b>${x.day}일</b><span style="display:block">${formatKoreanDate(x.date)}</span></div><strong>${badge}</strong></div>`;
   }).join("");
-  const reunion=daysUntil(new Date(CONFIG.RETURN_DATE));
-  reunionText.textContent=reunion>0?`한국복귀까지 ${reunion}일 남았어.`:reunion===0?"오늘이야!":"한국복귀일이 지났어.";
 }
 async function loadHomeStatus(){
   if(!sb||!currentUser) return;
