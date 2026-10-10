@@ -1218,6 +1218,30 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
 .missionAttachment audio{width:100%;display:block}
 .missionAnswerText{white-space:pre-wrap}
 
+
+/* ===== OUR DAY v5.32 categorized 365 missions ===== */
+.missionCategoryBadge{
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:8px;padding:6px 10px;border-radius:999px;
+  background:#e8eee3;color:#566452;font-size:11px;font-weight:800;
+}
+.missionChoiceGrid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;margin-top:4px;
+}
+.missionChoiceBtn{
+  border:1px solid #dce4d7;background:#fffdf8;color:#5b6756;
+  border-radius:14px;padding:11px 6px;font-size:12px;font-weight:700;
+}
+.missionChoiceBtn.active{
+  background:#dfe8d9;border-color:#aebfa5;color:#3f4e3a;
+}
+#mission .missionCategoryBadge{margin-right:6px}
+@media(max-width:420px){
+  .missionChoiceGrid{grid-template-columns:1fr 1fr 1fr}
+  .missionChoiceBtn{font-size:11px;padding:10px 4px}
+}
+
 </style></head><body><main class="wrap">
 <div class="top"><div><div class="brand">OUR DAY</div></div><div class="muted" id="today"></div></div>
 <section class="hero" id="hero"><div>지지은 한국복귀까지</div><h1 id="dday">D-?</h1><div id="remain"></div><div style="margin-top:5px;font-size:12px;opacity:.9">귀국일 · 2027.01.31</div><div class="clocks"><div class="clock">🇰🇷 한국<b id="kr">--:--</b></div><div class="clock">🇧🇪 벨기에<b id="be">--:--</b></div></div></section>
@@ -1369,8 +1393,60 @@ function initSupabase(){
 initSupabase();
 let currentUser=localStorage.getItem("ourday-user")||"";
 const moods=["행복해 🥰","설레 💓","편안해 🌿","보고싶어 💚","고마워 ☺️","피곤해 😴","속상해 🥺","심심해 😶","짜증나 😤","걱정돼 😟"];
-const MISSION_TOPICS=["오늘 가장 좋았던 순간","오늘 가장 웃겼던 일","오늘 가장 힘들었던 순간","오늘 제일 고마웠던 일","오늘 서로 생각난 순간","요즘 가장 듣고 싶은 말","요즘 가장 먹고 싶은 것","요즘 가장 가고 싶은 곳","요즘 가장 자주 듣는 노래","요즘 가장 사고 싶은 것","다음 데이트에서 하고 싶은 것","다음 데이트에서 먹고 싶은 것","다음에 같이 걷고 싶은 곳","다음에 같이 찍고 싶은 사진","다음에 같이 보고 싶은 영화","다음에 같이 듣고 싶은 노래","다음에 같이 먹고 싶은 디저트","다음에 같이 마시고 싶은 음료","다음에 같이 가고 싶은 카페","다음에 같이 가고 싶은 여행지","서로의 첫인상","서로의 웃는 모습","서로의 말투","서로의 장점","서로의 귀여운 점","서로에게 고마운 점","서로에게 듣고 싶은 칭찬","서로에게 해주고 싶은 말","서로가 잘하고 있는 점","서로가 닮았다고 느끼는 점","우리 첫 데이트","우리 처음 같이 먹었던 음식","우리 처음 찍은 사진","우리 가장 기억나는 날","우리 다시 가고 싶은 장소","우리 사진 중 좋아하는 분위기","우리에게 어울리는 색","우리에게 어울리는 계절","우리에게 어울리는 음식","우리에게 어울리는 노래 분위기","오늘의 기분","오늘의 한 단어","오늘의 색","오늘의 날씨 느낌","오늘의 점수","지금 가장 보고 싶은 장면","지금 가장 듣고 싶은 목소리","지금 가장 같이 하고 싶은 것","지금 가장 같이 먹고 싶은 것","지금 가장 같이 가고 싶은 곳","상대방이 귀엽다고 느껴질 때","상대방이 멋있다고 느껴질 때","상대방이 다정하다고 느껴질 때","상대방이 편안하게 느껴질 때","상대방에게 설레는 순간","연락할 때 좋아하는 방식","전화할 때 좋아하는 시간","사진을 보내고 싶은 순간","음성메시지를 보내고 싶은 순간","자기 전에 나누고 싶은 말","아침에 가장 먼저 하고 싶은 말","주말에 같이 하고 싶은 것","비 오는 날 같이 하고 싶은 것","날씨 좋은 날 같이 하고 싶은 것","피곤한 날 서로에게 해주고 싶은 것","기분 좋은 날 같이 하고 싶은 것","기분 안 좋은 날 받고 싶은 위로","서로 추천하고 싶은 메뉴","서로 추천하고 싶은 노래","서로 추천하고 싶은 장소","내일 가장 기대되는 것","이번 주 같이 해보고 싶은 것","다음 만남까지 기억하고 싶은 것"];
-const MISSION_ACTIONS=["서로 한 문장씩 말해보기","15초 음성메시지로 답해보기","이모지 3개로 표현해보기","상대의 답을 먼저 예상한 뒤 비교해보기","이 주제로 다음에 할 작은 약속 하나 정하기"];
+const MISSION_CATEGORIES=[
+  {
+    id:"memory", label:"기억", type:"date_text", attachmentKind:"",
+    topics:["우리 가장 기억나는 날","처음 진짜 가까워졌다고 느낀 날","다시 돌아가 보고 싶은 하루","처음 같이 크게 웃었던 날","서로 가장 고마웠던 날","사진 없이도 선명한 하루","처음 같이 먹은 게 기억나는 날","괜히 오래 생각나는 데이트","서로에게 힘이 됐던 날","다시 한 번 보내고 싶은 하루","처음 설렜던 순간이 떠오르는 날"],
+    actions:["날짜를 골라 이유를 한 문장으로 남겨보기","그날의 장면 하나를 짧게 적어보기","그날 다시 돌아가면 하고 싶은 말 적기","그날의 분위기를 한 단어로 덧붙이기","왜 아직 기억나는지 서로 적어보기","그날을 다시 보낸다면 하고 싶은 것 적기"]
+  },
+  {
+    id:"photo", label:"사진", type:"text_photo", attachmentKind:"image",
+    topics:["오늘 가장 좋았던 순간","오늘 웃겼던 순간","오늘 서로 생각난 순간","지금 보여주고 싶은 풍경","오늘 먹은 것 중 기억하고 싶은 것","오늘 제일 마음에 든 장면","지금 내 표정","오늘 하루를 닮은 색","오늘 가장 편했던 순간","오늘의 작은 행복","오늘 상대에게 보여주고 싶은 것"],
+    actions:["한 문장과 사진 한 장으로 남겨보기","사진이 있다면 같이 붙여보기","지금 떠오르는 장면을 사진으로 기록하기","한 문장으로 설명하고 사진 선택하기","오늘의 대표 사진을 하나 골라보기","상대에게 보여주고 싶은 사진과 이유 남기기"]
+  },
+  {
+    id:"audio", label:"음성", type:"audio", attachmentKind:"audio",
+    topics:["오늘 듣고 싶은 말","오늘 해주고 싶은 말","오늘 고마웠던 것","오늘 조금 힘들었던 것","지금 보고 싶은 이유","오늘 가장 웃긴 이야기","자기 전에 남기고 싶은 말","내일 힘내라고 해주고 싶은 말","오늘 상대가 귀여웠던 이유","오늘 상대가 멋있었던 이유","지금 목소리로 남기고 싶은 한마디"],
+    actions:["15초 정도 음성으로 남겨보기","짧은 음성메시지로 말해보기","목소리로 한 문장 남겨보기","지금 감정 그대로 음성으로 답하기","상대에게 보내는 짧은 음성편지 남기기","글 대신 목소리로 표현해보기"]
+  },
+  {
+    id:"choice", label:"선택", type:"choice", attachmentKind:"",
+    topics:["오늘 데이트를 고른다면","지금 같이 먹는다면","주말에 셋 중 하나만 한다면","다음에 같이 간다면","오늘 밤 같이 한다면","다음 여행 스타일을 고른다면","비 오는 날 함께 한다면","날씨 좋은 날 함께 한다면","지금 서로에게 필요한 시간을 고른다면","다음 만남의 분위기를 고른다면","둘이 하루 휴가가 생긴다면"],
+    actions:["카페 / 산책 / 맛집 중 하나 고르기","한식 / 양식 / 야식 중 하나 고르기","영화 / 드라이브 / 집데이트 중 하나 고르기","바다 / 도시 / 자연 중 하나 고르기","아침 / 오후 / 밤 중 하나 고르기","계획형 / 반반 / 즉흥형 중 하나 고르기"]
+  },
+  {
+    id:"promise", label:"약속", type:"promise", attachmentKind:"",
+    topics:["다음에 꼭 같이 해볼 것","이번 주 서로 해주고 싶은 것","다음 만남까지 지켜볼 작은 습관","상대가 힘들 때 해주고 싶은 것","서로 더 자주 했으면 하는 것","둘만의 작은 루틴","다음에 같이 먹을 것","다음에 같이 볼 것","다음에 같이 걸을 곳","서로에게 자주 해줄 말","다음 만남까지 기억할 약속"],
+    actions:["작은 약속 하나 정해보기","실제로 할 수 있게 한 문장으로 정하기","언제 할지까지 정해서 남겨보기","둘 다 부담 없는 약속으로 적어보기","다음 만남 전에 해볼 것으로 정하기","서로 지키면 기분 좋을 약속 하나 만들기"]
+  },
+  {
+    id:"date", label:"데이트", type:"plan_date", attachmentKind:"",
+    topics:["다음 데이트에서 하고 싶은 것","다음에 같이 먹고 싶은 것","다음에 가고 싶은 카페","다음에 걷고 싶은 곳","다음에 보고 싶은 영화","다음에 같이 듣고 싶은 공연","다음에 찍고 싶은 사진","다음에 가고 싶은 동네","다음에 해보고 싶은 활동","다음에 먹고 싶은 디저트","다음에 짧게 떠나고 싶은 곳"],
+    actions:["희망 날짜와 계획을 같이 적어보기","언제 할지 정하고 한 줄 계획 남기기","날짜를 정한 뒤 하고 싶은 걸 적기","다음 만남 후보 날짜와 내용을 남기기","가능한 날짜를 하나 골라 계획 세우기","언젠가가 아니라 날짜까지 정해보기"]
+  }
+];
+
+function buildMissionLibrary(){
+  const out=[];
+  for(let n=0;n<365;n++){
+    const cat=MISSION_CATEGORIES[n%MISSION_CATEGORIES.length];
+    const cycle=Math.floor(n/MISSION_CATEGORIES.length);
+    const topic=cat.topics[cycle%cat.topics.length];
+    const action=cat.actions[Math.floor(cycle/cat.topics.length)%cat.actions.length];
+    out.push({
+      id:n+1,
+      category:cat.id,
+      label:cat.label,
+      type:cat.type,
+      attachmentKind:cat.attachmentKind,
+      topic,
+      action,
+      title:topic+" · "+action
+    });
+  }
+  return out;
+}
+const MISSION_LIBRARY=buildMissionLibrary();
 const MISSION_ANCHOR="2026-10-11";
 const key=(d=new Date())=>new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
 function qIndex(ds){const a=new Date("2026-01-01T00:00:00+09:00"),d=new Date(ds+"T00:00:00+09:00");return ((Math.floor((d-a)/86400000)%365)+365)%365}
@@ -1379,40 +1455,39 @@ function missionIndex(ds){
   return ((Math.floor((d-a)/86400000)%365)+365)%365;
 }
 function missionSpec(ds){
-  const i=missionIndex(ds);
-  const topic=MISSION_TOPICS[i%73];
-  const action=MISSION_ACTIONS[i%5];
-  const dateTopics=["우리 가장 기억나는 날","우리 첫 데이트","우리 처음 같이 먹었던 음식","우리 처음 찍은 사진"];
-
-  if(dateTopics.includes(topic)){
-    return {topic,action,type:"date_text",prompt:"날짜를 고르고 그날이 떠오르는 이유를 한 문장으로 남겨봐.",attachmentKind:""};
-  }
-  if(topic.includes("사진")){
-    return {topic,action,type:"text_photo",prompt:"한 문장으로 답하고, 떠오르는 사진이 있다면 같이 남겨봐.",attachmentKind:"image"};
-  }
-  if(action==="서로 한 문장씩 말해보기"){
-    return {topic,action,type:"text_photo",prompt:"서로 한 문장씩 남겨봐. 사진을 함께 남겨도 좋아.",attachmentKind:"image"};
-  }
-  if(action==="15초 음성메시지로 답해보기"){
-    return {topic,action,type:"audio",prompt:"짧은 글이나 음성으로 남겨봐. 음성 파일을 첨부하면 그날 기록에 같이 저장돼.",attachmentKind:"audio"};
-  }
-  if(action==="이모지 3개로 표현해보기"){
-    return {topic,action,type:"emoji",prompt:"이모지 3개로 표현해봐.",attachmentKind:""};
-  }
-  if(action==="상대의 답을 먼저 예상한 뒤 비교해보기"){
-    return {topic,action,type:"prediction",prompt:"상대가 뭐라고 답할지 먼저 예상해서 적어봐. 둘의 답을 나중에 비교해보자.",attachmentKind:""};
-  }
-  return {topic,action,type:"promise",prompt:"이 주제로 다음에 같이 할 작은 약속 하나를 정해봐.",attachmentKind:""};
+  const item=MISSION_LIBRARY[missionIndex(ds)];
+  const prompts={
+    memory:"달력에서 날짜를 고르고, 왜 기억나는지 한 문장으로 남겨봐.",
+    photo:"한 문장으로 답하고 사진이 있다면 같이 남겨봐.",
+    audio:"짧은 글이나 음성으로 남겨봐. 음성 파일을 첨부해도 좋아.",
+    choice:"둘 중 고민하지 말고 오늘은 하나를 골라봐.",
+    promise:"실제로 지킬 수 있는 작은 약속 하나를 적어봐.",
+    date:"희망 날짜를 고르고 다음 데이트 계획을 한 문장으로 남겨봐."
+  };
+  const optionMap={
+    "카페 / 산책 / 맛집 중 하나 고르기":["카페","산책","맛집"],
+    "한식 / 양식 / 야식 중 하나 고르기":["한식","양식","야식"],
+    "영화 / 드라이브 / 집데이트 중 하나 고르기":["영화","드라이브","집데이트"],
+    "바다 / 도시 / 자연 중 하나 고르기":["바다","도시","자연"],
+    "아침 / 오후 / 밤 중 하나 고르기":["아침","오후","밤"],
+    "계획형 / 반반 / 즉흥형 중 하나 고르기":["계획형","반반","즉흥형"]
+  };
+  return {
+    topic:item.topic,
+    action:item.action,
+    category:item.category,
+    label:item.label,
+    type:item.type,
+    attachmentKind:item.attachmentKind,
+    prompt:prompts[item.category]||"",
+    options:optionMap[item.action]||[]
+  };
 }
 function missionFor(ds){
   const s=missionSpec(ds);
-  if(s.type==="date_text") return s.topic+" · 날짜를 고르고 한 문장으로 이유 남기기";
-  if(s.type==="text_photo") return s.topic+" · 한 문장 + 사진(선택)";
-  if(s.type==="audio") return s.topic+" · 15초 음성 또는 짧은 글";
-  if(s.type==="emoji") return s.topic+" · 이모지 3개";
-  if(s.type==="prediction") return s.topic+" · 상대의 답을 먼저 예상해보기";
-  return s.topic+" · 다음에 할 작은 약속 정하기";
+  return s.topic+" · "+s.action;
 }
+
 function clocks(){const n=new Date(),t=new Date(CONFIG.RETURN_DATE),df=t-n,m=Math.max(0,Math.floor(df/60000)),d=Math.floor(m/1440),h=Math.floor(m%1440/60),mi=m%60;kr.textContent=new Intl.DateTimeFormat("ko-KR",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hour12:false}).format(n);be.textContent=new Intl.DateTimeFormat("ko-KR",{timeZone:"Europe/Brussels",hour:"2-digit",minute:"2-digit",hour12:false}).format(n);dday.textContent=df>0?`D-${d}`:"D-DAY";remain.textContent=df>0?`${d}일 ${h}시간 ${mi}분 남음`:"드디어 오늘!"}
 today.textContent=new Intl.DateTimeFormat("ko-KR",{month:"long",day:"numeric",weekday:"short"}).format(new Date());
 function updateCoupleDays(){
@@ -2026,12 +2101,13 @@ function encodeMissionData(payload){
   return MISSION_DATA_PREFIX+JSON.stringify(payload);
 }
 function parseMissionData(raw){
-  if(!raw)return {type:"text",text:"",date:"",attachmentUrl:"",attachmentKind:""};
+  if(!raw)return {type:"text",category:"",text:"",date:"",attachmentUrl:"",attachmentKind:""};
   if(String(raw).startsWith(MISSION_DATA_PREFIX)){
     try{
       const x=JSON.parse(String(raw).slice(MISSION_DATA_PREFIX.length));
       return {
         type:x.type||"text",
+        category:x.category||"",
         text:x.text||"",
         date:x.date||"",
         attachmentUrl:x.attachmentUrl||"",
@@ -2039,26 +2115,33 @@ function parseMissionData(raw){
       };
     }catch(_e){}
   }
-  return {type:"text",text:String(raw),date:"",attachmentUrl:"",attachmentKind:""};
+  return {type:"text",category:"",text:String(raw),date:"",attachmentUrl:"",attachmentKind:""};
 }
 function renderMissionResponseUI(ds,data=null){
   const box=document.getElementById("missionResponseUI");
   if(!box)return;
   const spec=missionSpec(ds);
   const saved=data||{type:spec.type,text:"",date:"",attachmentUrl:"",attachmentKind:""};
-  let h='<div class="missionGuide">'+escapeHtml(spec.prompt)+'</div>';
+  let h='<div class="missionCategoryBadge">'+escapeHtml(spec.label)+' 미션</div>'+
+        '<div class="missionGuide">'+escapeHtml(spec.prompt)+'</div>';
 
   if(spec.type==="date_text"){
     h+='<label class="missionFieldLabel">기억나는 날짜</label>'+
        '<input class="missionDateInput" id="missionDateInput" type="date" max="'+key()+'" value="'+escapeHtml(saved.date||"")+'">'+
        '<label class="missionFieldLabel">왜 이 날이 기억나?</label>'+
        '<textarea class="missionTextInput" id="missionTextInput" maxlength="220" placeholder="한 문장으로 남겨봐">'+escapeHtml(saved.text||"")+'</textarea>';
-  }else if(spec.type==="emoji"){
-    h+='<label class="missionFieldLabel">이모지 3개</label>'+
-       '<input class="missionEmojiInput" id="missionTextInput" maxlength="20" value="'+escapeHtml(saved.text||"")+'" placeholder="😊 🌿 💚">';
+  }else if(spec.type==="plan_date"){
+    h+='<label class="missionFieldLabel">희망 날짜</label>'+
+       '<input class="missionDateInput" id="missionDateInput" type="date" min="'+key()+'" value="'+escapeHtml(saved.date||"")+'">'+
+       '<label class="missionFieldLabel">데이트 계획</label>'+
+       '<textarea class="missionTextInput" id="missionTextInput" maxlength="220" placeholder="어디서 무엇을 하고 싶은지 적어봐">'+escapeHtml(saved.text||"")+'</textarea>';
+  }else if(spec.type==="choice"){
+    h+='<input type="hidden" id="missionTextInput" value="'+escapeHtml(saved.text||"")+'">'+
+       '<div class="missionChoiceGrid">'+spec.options.map(opt=>
+         '<button type="button" class="missionChoiceBtn'+(saved.text===opt?' active':'')+'" onclick="selectMissionChoice(this,\''+escapeHtml(opt)+'\')">'+escapeHtml(opt)+'</button>'
+       ).join("")+'</div>';
   }else{
-    const placeholder=spec.type==="prediction"?"상대가 이렇게 답할 것 같아...":
-      spec.type==="promise"?"다음에 같이 할 작은 약속을 적어봐":
+    const placeholder=spec.type==="promise"?"다음에 같이 지킬 작은 약속을 적어봐":
       spec.type==="audio"?"짧게 글로 남겨도 좋아":
       "오늘의 답을 한 문장으로 남겨봐";
     h+='<textarea class="missionTextInput" id="missionTextInput" maxlength="220" placeholder="'+placeholder+'">'+escapeHtml(saved.text||"")+'</textarea>';
@@ -2078,6 +2161,13 @@ function renderMissionResponseUI(ds,data=null){
   box.dataset.day=ds;
   box.dataset.type=spec.type;
 }
+function selectMissionChoice(btn,value){
+  const input=document.getElementById("missionTextInput");
+  if(input)input.value=value;
+  document.querySelectorAll(".missionChoiceBtn").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+}
+
 function previewMissionAttachment(input,kind){
   const f=input?.files?.[0];
   const preview=document.getElementById("missionAttachmentPreview");
@@ -2109,6 +2199,8 @@ async function uploadMissionAttachment(file,kind){
 function missionAnswerHtml(raw){
   const x=parseMissionData(raw);
   let h="";
+  const labels={memory:"기억",photo:"사진",audio:"음성",choice:"선택",promise:"약속",date:"데이트"};
+  if(x.category && labels[x.category]) h+='<div class="missionCategoryBadge">'+escapeHtml(labels[x.category])+'</div>';
   if(x.date) h+='<div class="missionStoredDate">'+escapeHtml(formatArchiveDate(x.date))+'</div>';
   if(x.text) h+='<div class="missionAnswerText">'+escapeHtml(x.text)+'</div>';
   if(x.attachmentUrl && x.attachmentKind==="image"){
@@ -2128,15 +2220,15 @@ async function saveMissionAnswer(){
   const selectedDate=dateEl?.value||"";
   const file=fileEl?.files?.[0]||null;
 
-  if(spec.type==="date_text" && (!selectedDate||!text)){
-    missionStatus.textContent="날짜와 한 문장 답을 같이 남겨줘.";
+  if((spec.type==="date_text"||spec.type==="plan_date") && (!selectedDate||!text)){
+    missionStatus.textContent=spec.type==="date_text"?"날짜와 한 문장 답을 같이 남겨줘.":"희망 날짜와 데이트 계획을 같이 남겨줘.";
     return;
   }
-  if(spec.type==="emoji" && !text){
-    missionStatus.textContent="이모지 3개를 남겨줘.";
+  if(spec.type==="choice" && !text){
+    missionStatus.textContent="하나를 골라줘.";
     return;
   }
-  if(spec.type!=="date_text" && spec.type!=="emoji" && !text && !file && !currentMissionRecord?.attachmentUrl){
+  if(spec.type!=="date_text" && spec.type!=="plan_date" && spec.type!=="choice" && !text && !file && !currentMissionRecord?.attachmentUrl){
     missionStatus.textContent="미션 답을 남겨줘.";
     return;
   }
@@ -2147,6 +2239,7 @@ async function saveMissionAnswer(){
     if(file) attachmentUrl=await uploadMissionAttachment(file,spec.attachmentKind);
     const payload={
       type:spec.type,
+      category:spec.category,
       text,
       date:selectedDate,
       attachmentUrl,
