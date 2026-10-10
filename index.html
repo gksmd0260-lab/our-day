@@ -1313,8 +1313,20 @@ function initSupabase(){
 }
 initSupabase();
 let currentUser=localStorage.getItem("ourday-user")||"";
-const moods=["행복해 🥰","설레 💓","편안해 🌿","보고싶어 💚","고마워 ☺️","피곤해 😴","속상해 🥺","심심해 😶","짜증나 😤","걱정돼 😟"];const missions=["서로 음성메시지 하나 보내기","오늘 찍은 사진 한 장 서로 보내기","상대방 칭찬 3개 말해주기","다음 데이트 메뉴를 한 명이 정하기","예전 사진 한 장 골라 보내기","보고 싶은 이유를 한 문장으로 말하기","오늘 있었던 웃긴 일 하나 공유하기","다음에 같이 먹을 메뉴 하나 정하기"];
-const key=(d=new Date())=>new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(d);function qIndex(ds){const a=new Date("2026-01-01T00:00:00+09:00"),d=new Date(ds+"T00:00:00+09:00");return ((Math.floor((d-a)/86400000)%365)+365)%365}function missionFor(ds){let h=0;for(const c of ds)h=(h*31+c.charCodeAt(0))>>>0;return missions[h%missions.length]}
+const moods=["행복해 🥰","설레 💓","편안해 🌿","보고싶어 💚","고마워 ☺️","피곤해 😴","속상해 🥺","심심해 😶","짜증나 😤","걱정돼 😟"];
+const MISSION_TOPICS=["오늘 가장 좋았던 순간","오늘 가장 웃겼던 일","오늘 가장 힘들었던 순간","오늘 제일 고마웠던 일","오늘 서로 생각난 순간","요즘 가장 듣고 싶은 말","요즘 가장 먹고 싶은 것","요즘 가장 가고 싶은 곳","요즘 가장 자주 듣는 노래","요즘 가장 사고 싶은 것","다음 데이트에서 하고 싶은 것","다음 데이트에서 먹고 싶은 것","다음에 같이 걷고 싶은 곳","다음에 같이 찍고 싶은 사진","다음에 같이 보고 싶은 영화","다음에 같이 듣고 싶은 노래","다음에 같이 먹고 싶은 디저트","다음에 같이 마시고 싶은 음료","다음에 같이 가고 싶은 카페","다음에 같이 가고 싶은 여행지","서로의 첫인상","서로의 웃는 모습","서로의 말투","서로의 장점","서로의 귀여운 점","서로에게 고마운 점","서로에게 듣고 싶은 칭찬","서로에게 해주고 싶은 말","서로가 잘하고 있는 점","서로가 닮았다고 느끼는 점","우리 첫 데이트","우리 처음 같이 먹었던 음식","우리 처음 찍은 사진","우리 가장 웃겼던 추억","우리 다시 가고 싶은 장소","우리 사진 중 좋아하는 분위기","우리에게 어울리는 색","우리에게 어울리는 계절","우리에게 어울리는 음식","우리에게 어울리는 노래 분위기","오늘의 기분","오늘의 한 단어","오늘의 색","오늘의 날씨 느낌","오늘의 점수","지금 가장 보고 싶은 장면","지금 가장 듣고 싶은 목소리","지금 가장 같이 하고 싶은 것","지금 가장 같이 먹고 싶은 것","지금 가장 같이 가고 싶은 곳","상대방이 귀엽다고 느껴질 때","상대방이 멋있다고 느껴질 때","상대방이 다정하다고 느껴질 때","상대방이 편안하게 느껴질 때","상대방에게 설레는 순간","연락할 때 좋아하는 방식","전화할 때 좋아하는 시간","사진을 보내고 싶은 순간","음성메시지를 보내고 싶은 순간","자기 전에 나누고 싶은 말","아침에 가장 먼저 하고 싶은 말","주말에 같이 하고 싶은 것","비 오는 날 같이 하고 싶은 것","날씨 좋은 날 같이 하고 싶은 것","피곤한 날 서로에게 해주고 싶은 것","기분 좋은 날 같이 하고 싶은 것","기분 안 좋은 날 받고 싶은 위로","서로 추천하고 싶은 메뉴","서로 추천하고 싶은 노래","서로 추천하고 싶은 장소","내일 가장 기대되는 것","이번 주 같이 해보고 싶은 것","다음 만남까지 기억하고 싶은 것"];
+const MISSION_ACTIONS=["서로 한 문장씩 말해보기","15초 음성메시지로 답해보기","이모지 3개로 표현해보기","상대의 답을 먼저 예상한 뒤 비교해보기","이 주제로 다음에 할 작은 약속 하나 정하기"];
+const MISSION_ANCHOR="2026-10-11";
+const key=(d=new Date())=>new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
+function qIndex(ds){const a=new Date("2026-01-01T00:00:00+09:00"),d=new Date(ds+"T00:00:00+09:00");return ((Math.floor((d-a)/86400000)%365)+365)%365}
+function missionIndex(ds){
+  const a=new Date(MISSION_ANCHOR+"T00:00:00+09:00"),d=new Date(ds+"T00:00:00+09:00");
+  return ((Math.floor((d-a)/86400000)%365)+365)%365;
+}
+function missionFor(ds){
+  const i=missionIndex(ds);
+  return "오늘의 주제: "+MISSION_TOPICS[i%73]+" · "+MISSION_ACTIONS[i%5];
+}
 function clocks(){const n=new Date(),t=new Date(CONFIG.RETURN_DATE),df=t-n,m=Math.max(0,Math.floor(df/60000)),d=Math.floor(m/1440),h=Math.floor(m%1440/60),mi=m%60;kr.textContent=new Intl.DateTimeFormat("ko-KR",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hour12:false}).format(n);be.textContent=new Intl.DateTimeFormat("ko-KR",{timeZone:"Europe/Brussels",hour:"2-digit",minute:"2-digit",hour12:false}).format(n);dday.textContent=df>0?`D-${d}`:"D-DAY";remain.textContent=df>0?`${d}일 ${h}시간 ${mi}분 남음`:"드디어 오늘!"}
 today.textContent=new Intl.DateTimeFormat("ko-KR",{month:"long",day:"numeric",weekday:"short"}).format(new Date());
 function updateCoupleDays(){
