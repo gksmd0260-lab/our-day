@@ -1163,6 +1163,15 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
   padding:10px!important;
 }
 
+
+/* ===== OUR DAY v5.30 mission answers ===== */
+#missionShared{margin-top:10px}
+.missionAnswerCard{
+  background:#f7f8f2;border:1px solid #e2e7dc;border-radius:15px;
+  padding:10px 11px;margin-top:7px;line-height:1.5;font-size:13px;
+}
+.missionAnswerCard b{display:block;margin-bottom:4px;color:#52624c}
+
 </style></head><body><main class="wrap">
 <div class="top"><div><div class="brand">OUR DAY</div></div><div class="muted" id="today"></div></div>
 <section class="hero" id="hero"><div>지지은 한국복귀까지</div><h1 id="dday">D-?</h1><div id="remain"></div><div style="margin-top:5px;font-size:12px;opacity:.9">귀국일 · 2027.01.31</div><div class="clocks"><div class="clock">🇰🇷 한국<b id="kr">--:--</b></div><div class="clock">🇧🇪 벨기에<b id="be">--:--</b></div></div></section>
@@ -1231,7 +1240,7 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
 
 <div id="todayView" style="display:none"><section class="card"><h2>오늘의 질문 <span class="muted" id="qno"></span></h2><div class="question" id="question"></div><textarea id="answer" placeholder="내 답을 남겨봐"></textarea><button class="btn" onclick="saveAnswer()" style="margin-top:8px">답 저장</button><div id="answers"></div></section><section class="card"><h2>지금 기분</h2><div class="row" id="moodBtns"></div><div class="status" id="moodShared"></div></section>
 <section class="card"><h2>오늘의 한 줄 일기</h2><div class="status" style="margin-bottom:10px">각자 한 줄씩 남겨봐. 둘 다 작성하면 서로의 일기가 공개돼.</div><textarea id="diaryInput" maxlength="160" placeholder="오늘 남기고 싶은 한 줄"></textarea><button class="btn" onclick="saveDiary()" style="margin-top:8px">일기 저장</button><div class="status" id="diaryStatus"></div><div id="diaryShared"></div></section>
-<section class="card"><h2>오늘의 우리 노래</h2><div id="songArea"><div class="songLocked">둘 다 질문·기분·한 줄 일기를 남기면 오늘의 노래를 추천받을 수 있어.</div></div></section><section class="card"><h2>오늘 한 장</h2><input id="photoInput" type="file" accept="image/*"><button class="btn" onclick="uploadPhoto()" style="margin-top:8px">사진 올리기</button><div class="row" id="photos" style="margin-top:12px"></div><div class="status" id="photoStatus"></div><div class="status" style="margin-top:4px">사진 업로드가 실패하면 오류 문구가 여기에 표시돼.</div></section><section class="card"><h2>오늘의 미션</h2><div class="question" id="mission"></div><button class="btn" onclick="completeMission()">완료</button><div class="status" id="missionStatus"></div></section></div>
+<section class="card"><h2>오늘의 우리 노래</h2><div id="songArea"><div class="songLocked">둘 다 질문·기분·한 줄 일기를 남기면 오늘의 노래를 추천받을 수 있어.</div></div></section><section class="card"><h2>오늘 한 장</h2><input id="photoInput" type="file" accept="image/*"><button class="btn" onclick="uploadPhoto()" style="margin-top:8px">사진 올리기</button><div class="row" id="photos" style="margin-top:12px"></div><div class="status" id="photoStatus"></div><div class="status" style="margin-top:4px">사진 업로드가 실패하면 오류 문구가 여기에 표시돼.</div></section><section class="card"><h2>오늘의 미션</h2><div class="question" id="mission"></div><textarea id="missionAnswer" maxlength="220" placeholder="미션에 대한 내 답을 남겨봐"></textarea><button class="btn" onclick="saveMissionAnswer()" style="margin-top:8px">답 저장</button><button class="btn secondary" onclick="completeMission()" style="margin-top:8px">완료</button><div class="status" id="missionStatus"></div><div id="missionShared"></div></section></div>
 <div id="archiveView" style="display:none">
   <section class="card">
     <div class="archiveFeedHead"><div><strong>기록</strong><div class="status">우리의 하루를 최근 기록부터 이어서 볼 수 있어.</div></div></div>
@@ -1378,14 +1387,14 @@ async function loadHomeStatus(){
     sb.from("daily_answers").select("person").eq("day",key()),
     sb.from("daily_moods").select("person,mood").eq("day",key()),
     sb.from("daily_photos").select("person").eq("day",key()),
-    sb.from("daily_missions").select("person,done").eq("day",key())
+    sb.from("daily_missions").select("person,done,answer").eq("day",key())
   ]);
   const ans=a.data||[], moodsNow=m.data||[], photosNow=p.data||[], missionsNow=mi.data||[];
   const otherAnswered=ans.some(x=>x.person===other);
   const myAnswered=ans.some(x=>x.person===currentUser);
   const otherPhoto=photosNow.some(x=>x.person===other);
   const otherMood=moodsNow.find(x=>x.person===other);
-  const otherMission=missionsNow.some(x=>x.person===other&&x.done);
+  const otherMission=missionsNow.some(x=>x.person===other&&(x.done||x.answer));
   todayStatusCards.innerHTML=`
     <div class="notify"><div class="icon">💌</div><div class="txt"><b>${other}</b> ${otherAnswered?"오늘의 질문에 답했어 👀":"아직 오늘의 질문에 답하지 않았어."}${!myAnswered&&otherAnswered?"<br><span class='muted'>네가 답하면 서로의 답이 공개돼.</span>":""}</div></div>
     <div class="notify"><div class="icon">🙂</div><div class="txt">${otherMood?`<b>${other}</b>의 지금 기분 · ${otherMood.mood}`:`${other}이 아직 기분을 남기지 않았어.`}</div></div>
@@ -1495,7 +1504,10 @@ async function loadArchiveFeed(){
             '</div>';
         }
         if(missions.length){
-          h+='<div class="archiveBlock"><b>미션</b>'+missions.map(x=>escapeHtml(x.person)+(x.done?' 완료 ✓':' 미완료')).join(' · ')+'</div>';
+          h+='<div class="archiveBlock"><b>미션</b>'+
+            '<div>'+escapeHtml(missionFor(day))+'</div>'+
+            missions.map(x=>'<div style="margin-top:6px"><b>'+escapeHtml(x.person)+(x.done?' · 완료 ✓':'')+'</b>'+(x.answer?escapeHtml(x.answer):'답변 없음')+'</div>').join('')+
+            '</div>';
         }
         h+='</div>';
         h+='<div class="archiveActions">';
@@ -1758,7 +1770,10 @@ async function openDayRecord(day,focusUrl="",owner=""){
 
     if(missions.length){
       h+='<div class="recordSection"><div class="recordMiniLabel">MISSION</div><b>그날 미션</b>'+
-         '<div class="status">'+missions.map(x=>escapeHtml(x.person)+(x.done?" 완료 ✓":" 미완료")).join(" · ")+'</div></div>';
+         '<div class="status" style="margin-bottom:8px">'+escapeHtml(missionFor(day))+'</div>'+
+         '<div class="recordPair">'+missions.map(x=>
+           '<div class="recordAnswer"><b>'+escapeHtml(x.person)+(x.done?' · 완료 ✓':'')+'</b>'+(x.answer?escapeHtml(x.answer):'답변 없음')+'</div>'
+         ).join("")+'</div></div>';
     }
 
     recordModalContent.innerHTML=h;
@@ -1927,7 +1942,41 @@ async function loadPhotos(){
       '<div class="status">'+x.person+' · 눌러서 크게 보기</div></div>';
   }).join("")||'<div class="status">아직 오늘 사진이 없어.</div>';
 }
-async function completeMission(){await sb.from("daily_missions").upsert({day:key(),person:currentUser,done:true},{onConflict:"day,person"});refreshAll()}async function loadMission(){const {data=[]}=await sb.from("daily_missions").select("*").eq("day",key());missionStatus.textContent=data.map(x=>`${x.person} 완료 ✓`).join(" · ")||"아직 완료한 사람이 없어."}
+async function saveMissionAnswer(){
+  if(!currentUser){missionStatus.textContent="사용자를 먼저 선택해줘.";return}
+  const text=missionAnswer.value.trim();
+  if(!text){missionStatus.textContent="미션 답을 입력해줘.";return}
+  missionStatus.textContent="저장 중...";
+  const {error}=await sb.from("daily_missions").upsert(
+    {day:key(),person:currentUser,answer:text},
+    {onConflict:"day,person"}
+  );
+  if(error){
+    missionStatus.textContent="저장 실패: "+error.message;
+    return;
+  }
+  missionStatus.textContent="내 미션 답 저장 완료 ✓";
+  await Promise.all([loadMission(),loadHomeStatus()]);
+}
+async function completeMission(){
+  if(!currentUser)return;
+  const {error}=await sb.from("daily_missions").upsert(
+    {day:key(),person:currentUser,done:true},
+    {onConflict:"day,person"}
+  );
+  if(error){missionStatus.textContent="완료 저장 실패: "+error.message;return}
+  await refreshAll();
+}
+async function loadMission(){
+  const {data=[],error}=await sb.from("daily_missions").select("*").eq("day",key()).order("person",{ascending:true});
+  if(error){missionStatus.textContent=error.message;return}
+  const mine=data.find(x=>x.person===currentUser);
+  if(mine?.answer && document.activeElement!==missionAnswer) missionAnswer.value=mine.answer;
+  missionStatus.textContent=data.filter(x=>x.done).map(x=>`${x.person} 완료 ✓`).join(" · ")||"아직 완료한 사람이 없어.";
+  missionShared.innerHTML=data.filter(x=>x.answer).map(x=>
+    '<div class="missionAnswerCard"><b>'+escapeHtml(x.person)+'</b>'+escapeHtml(x.answer)+'</div>'
+  ).join("");
+}
 
 
 async function saveDiary(){
