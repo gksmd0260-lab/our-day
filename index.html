@@ -1454,15 +1454,42 @@ function missionIndex(ds){
   const a=new Date(MISSION_ANCHOR+"T00:00:00+09:00"),d=new Date(ds+"T00:00:00+09:00");
   return ((Math.floor((d-a)/86400000)%365)+365)%365;
 }
+function returnDateKey(){
+  return CONFIG.RETURN_DATE.slice(0,10);
+}
+function isBeforeReturn(ds){
+  return ds<returnDateKey();
+}
 function missionSpec(ds){
-  const item=MISSION_LIBRARY[missionIndex(ds)];
+  let item=MISSION_LIBRARY[missionIndex(ds)];
+
+  // 1/31 한국 복귀 전에는 데이트 미션 빈도를 약 1/3로 낮춘다.
+  // 줄어든 자리는 장거리에서도 바로 할 수 있는 사진/약속/선택 미션으로 대체한다.
+  if(item.category==="date" && isBeforeReturn(ds)){
+    const dateSlot=Math.floor(missionIndex(ds)/MISSION_CATEGORIES.length);
+    if(dateSlot%3!==0){
+      const fallbackIds=["photo","promise","choice"];
+      const fallbackId=fallbackIds[dateSlot%fallbackIds.length];
+      const pool=MISSION_LIBRARY.filter(x=>x.category===fallbackId);
+      item=pool[dateSlot%pool.length];
+    }else{
+      item={
+        ...item,
+        topic:"한국 복귀 후 "+item.topic.replace(/^다음에\s*/,""),
+        action:"1월 31일 이후로 "+item.action
+      };
+    }
+  }
+
   const prompts={
     memory:"달력에서 날짜를 고르고, 왜 기억나는지 한 문장으로 남겨봐.",
     photo:"한 문장으로 답하고 사진이 있다면 같이 남겨봐.",
     audio:"짧은 글이나 음성으로 남겨봐. 음성 파일을 첨부해도 좋아.",
     choice:"둘 중 고민하지 말고 오늘은 하나를 골라봐.",
     promise:"실제로 지킬 수 있는 작은 약속 하나를 적어봐.",
-    date:"희망 날짜를 고르고 다음 데이트 계획을 한 문장으로 남겨봐."
+    date:isBeforeReturn(ds)
+      ?"한국 복귀일인 1월 31일 이후 날짜를 골라, 만나서 하고 싶은 걸 한 문장으로 남겨봐."
+      :"희망 날짜를 고르고 다음 데이트 계획을 한 문장으로 남겨봐."
   };
   const optionMap={
     "카페 / 산책 / 맛집 중 하나 고르기":["카페","산책","맛집"],
@@ -2131,10 +2158,11 @@ function renderMissionResponseUI(ds,data=null){
        '<label class="missionFieldLabel">왜 이 날이 기억나?</label>'+
        '<textarea class="missionTextInput" id="missionTextInput" maxlength="220" placeholder="한 문장으로 남겨봐">'+escapeHtml(saved.text||"")+'</textarea>';
   }else if(spec.type==="plan_date"){
-    h+='<label class="missionFieldLabel">희망 날짜</label>'+
-       '<input class="missionDateInput" id="missionDateInput" type="date" min="'+key()+'" value="'+escapeHtml(saved.date||"")+'">'+
+    h+='<label class="missionFieldLabel">'+(isBeforeReturn(ds)?'희망 날짜 · 1월 31일 이후':'희망 날짜')+'</label>'+
+       '<input class="missionDateInput" id="missionDateInput" type="date" min="'+(isBeforeReturn(ds)?returnDateKey():key())+'" value="'+escapeHtml(saved.date||"")+'">'+
        '<label class="missionFieldLabel">데이트 계획</label>'+
-       '<textarea class="missionTextInput" id="missionTextInput" maxlength="220" placeholder="어디서 무엇을 하고 싶은지 적어봐">'+escapeHtml(saved.text||"")+'</textarea>';
+       '<textarea class="missionTextInput" id="missionTextInput" maxlength="220" placeholder="어디서 무엇을 하고 싶은지 적어봐">'+escapeHtml(saved.text||"")+'</textarea>'+
+       (isBeforeReturn(ds)?'<div class="status" style="margin-top:7px">한국 복귀일 · 2027.01.31 이후 일정만 선택할 수 있어.</div>':'');
   }else if(spec.type==="choice"){
     h+='<input type="hidden" id="missionTextInput" value="'+escapeHtml(saved.text||"")+'">'+
        '<div class="missionChoiceGrid">'+spec.options.map(opt=>
