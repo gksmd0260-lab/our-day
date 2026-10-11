@@ -1242,6 +1242,35 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
   .missionChoiceBtn{font-size:11px;padding:10px 4px}
 }
 
+
+/* ===== OUR DAY v5.31 gallery natural ratio fix ===== */
+#galleryGrid{
+  columns:2!important;
+  column-gap:10px!important;
+}
+.galleryItem{
+  aspect-ratio:auto!important;
+  height:auto!important;
+  border-radius:18px!important;
+  overflow:hidden!important;
+  break-inside:avoid!important;
+}
+.galleryItem img{
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:auto!important;
+  object-fit:contain!important;
+  display:block!important;
+}
+.galleryItem:nth-child(n) img{
+  aspect-ratio:auto!important;
+}
+.galleryMeta{
+  border:0!important;
+  box-shadow:none!important;
+  background:linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,.10) 35%,rgba(0,0,0,.62) 100%)!important;
+}
+
 </style></head><body><main class="wrap">
 <div class="top"><div><div class="brand">OUR DAY</div></div><div class="muted" id="today"></div></div>
 <section class="hero" id="hero"><div>지지은 한국복귀까지</div><h1 id="dday">D-?</h1><div id="remain"></div><div style="margin-top:5px;font-size:12px;opacity:.9">귀국일 · 2027.01.31</div><div class="clocks"><div class="clock">🇰🇷 한국<b id="kr">--:--</b></div><div class="clock">🇧🇪 벨기에<b id="be">--:--</b></div></div></section>
