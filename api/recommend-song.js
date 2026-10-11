@@ -1,11 +1,28 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   try {
-    const { question, answers, moods, diaries, recent_songs = [] } = req.body || {};
+    const { day, question, answers, moods, diaries, recent_songs = [] } = req.body || {};
     if (!question || !answers?.haneung || !answers?.jieun || !moods?.haneung || !moods?.jieun || !diaries?.haneung || !diaries?.jieun) return res.status(400).json({ error: "두 사람의 답변, 기분, 한 줄 일기가 모두 필요해." });
     const openaiKey=process.env.OPENAI_API_KEY, youtubeKey=process.env.YOUTUBE_API_KEY;
     if(!openaiKey) return res.status(500).json({error:"OPENAI_API_KEY가 Vercel에 설정되지 않았어."});
     if(!youtubeKey) return res.status(500).json({error:"YOUTUBE_API_KEY가 Vercel에 설정되지 않았어."});
+    
+    const laneIndex=(()=>{
+      const source=String(day||new Date().toISOString().slice(0,10));
+      let h=0;
+      for(const ch of source) h=(h*31+ch.charCodeAt(0))>>>0;
+      return h%6;
+    })();
+    const lanes=[
+      "한국어 곡 중심: K-pop, 발라드, 한국 대중가요 중 오늘 분위기에 맞는 곡",
+      "한국 인디/밴드 중심: 인디팝, 포크, 밴드, 록 계열",
+      "한국 R&B/힙합/소울 중심: 너무 센 곡보다는 오늘 분위기에 맞는 곡",
+      "해외 비팝 중심: 록, 소울, R&B, 재즈팝, 일렉트로닉, 포크 중 선택",
+      "해외 팝/올드팝 중심: 최근 해외 팝이 연속됐다면 반드시 다른 결의 곡",
+      "자유 선택: 단 최근 2곡과 국적·장르 결이 겹치지 않는 곡"
+    ];
+    const diversityLane=lanes[laneIndex];
+
     const recentText=(recent_songs||[]).length
       ? (recent_songs||[]).map((s,i)=>`${i+1}. ${s.song_title} - ${s.artist}`).join("\n")
       : "없음";
@@ -29,7 +46,12 @@ export default async function handler(req, res) {
 - 반대로 오래된 곡만 나오지 않도록 최신곡도 섞을 것.
 - 유명한 대표곡만 반복적으로 선택하지 말고, 분위기에 잘 맞는 덜 뻔한 곡도 고려할 것.
 - 한국곡과 해외곡이 한쪽으로 몰리지 않게 최근 기록을 참고할 것.
-- 단, 다양성을 위해 오늘 분위기와 안 맞는 곡을 억지로 고르지는 말 것.
+- 같은 '해외 팝' 계열은 최대 2일 연속까지만 허용한다. 최근 2곡이 해외 팝이면 오늘은 해외 팝을 금지하고 한국곡 또는 다른 장르를 고를 것.
+- 최근 5곡 중 해외곡이 4곡 이상이면 오늘은 반드시 한국 아티스트의 곡을 추천할 것.
+- 최근 5곡 중 팝 계열이 4곡 이상이면 오늘은 반드시 팝이 아닌 장르(밴드/록/R&B/힙합/소울/포크/일렉트로닉/시티팝 등)를 고를 것.
+- 최근 3곡과 같은 넓은 장르 결을 연속해서 고르지 말 것.
+- 오늘의 다양성 레인 지침을 반드시 우선 적용할 것: ${diversityLane}
+- 단, 가사 정서가 오늘 기록과 정면으로 충돌하는 곡은 피할 것.
 - 지나치게 이별, 불륜, 절망, 관계 파국이 중심인 곡은 피할 것.
 
 출력:
