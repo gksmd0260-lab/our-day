@@ -1271,6 +1271,23 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
   background:linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,.10) 35%,rgba(0,0,0,.62) 100%)!important;
 }
 
+
+/* ===== OUR DAY v5.37 two-song recommendation ===== */
+.songPair{display:grid;gap:10px}
+.songDiscoveryCard{
+  background:#faf8f2;border:1px dashed #d8ded1;border-radius:20px;padding:15px;
+}
+.songCardLabel{
+  display:inline-flex;align-items:center;gap:5px;margin-bottom:3px;
+  font-size:11px;font-weight:850;letter-spacing:.02em;color:#64725f;
+}
+.songDiscoveryCard .songTitle{font-size:18px}
+.songDiscoveryCard .youtubeBtn{background:#7f9275}
+.archiveDiscovery{
+  margin-top:8px;padding-top:8px;border-top:1px dashed #d8ded1;
+}
+.archiveDiscovery b{color:#63715d}
+
 </style></head><body><main class="wrap">
 <div class="top"><div><div class="brand">OUR DAY</div></div><div class="muted" id="today"></div></div>
 <section class="hero" id="hero"><div>지지은 한국복귀까지</div><h1 id="dday">D-?</h1><div id="remain"></div><div style="margin-top:5px;font-size:12px;opacity:.9">귀국일 · 2027.01.31</div><div class="clocks"><div class="clock">🇰🇷 한국<b id="kr">--:--</b></div><div class="clock">🇧🇪 벨기에<b id="be">--:--</b></div></div></section>
@@ -1686,7 +1703,7 @@ async function loadArchiveFeed(){
       if(moods.length) summary.push('기분 '+moods.length);
       if(diaries.length) summary.push('일기 '+diaries.length);
       if(photos.length) summary.push('사진 '+photos.length);
-      if(song) summary.push('노래 1');
+      if(song) summary.push(song.discovery_song_title?'노래 2':'노래 1');
       if(missions.length) summary.push('미션 '+missions.length);
       if(summary.length){
         h+='<div class="archiveSummary">'+summary.map(x=>'<span>'+escapeHtml(x)+'</span>').join('')+'</div>';
@@ -1706,9 +1723,13 @@ async function loadArchiveFeed(){
           ).join("")+'</div>';
         }
         if(song){
-          h+='<div class="archiveBlock archiveSong"><b>오늘의 우리 노래</b>'+
+          h+='<div class="archiveBlock archiveSong"><b>오늘의 메인 곡</b>'+
             escapeHtml(song.song_title||"")+' · '+escapeHtml(song.artist||"")+
             (song.youtube_url?'<br><a href="'+song.youtube_url+'" target="_blank" rel="noopener">YouTube에서 듣기 ▶</a>':'')+
+            (song.discovery_song_title?'<div class="archiveDiscovery"><b>한 곡 더 · 새로운 발견</b>'+
+              escapeHtml(song.discovery_song_title||"")+' · '+escapeHtml(song.discovery_artist||"")+
+              (song.discovery_youtube_url?'<br><a href="'+song.discovery_youtube_url+'" target="_blank" rel="noopener">YouTube에서 듣기 ▶</a>':'')+
+              '</div>':'')+
             '</div>';
         }
         if(missions.length){
@@ -1966,14 +1987,21 @@ async function openDayRecord(day,focusUrl="",owner=""){
     if(song.data){
       const s=song.data;
       const tags=(s.mood_tags||[]).map(t=>'<span class="songTag">'+escapeHtml(t)+'</span>').join("");
-      h+='<div class="recordSection"><div class="recordMiniLabel">OUR SONG</div><b>오늘의 우리 노래</b>'+
+      h+='<div class="recordSection"><div class="recordMiniLabel">OUR SONG</div><b>오늘의 메인 곡</b>'+
          '<div class="recordSong"><div class="recordSongMain">'+
          '<div class="songMood">'+tags+'</div>'+
          '<div class="songArchiveTitle">'+escapeHtml(s.song_title||"")+'</div>'+
          '<div class="songArchiveArtist">'+escapeHtml(s.artist||"")+'</div>'+
          '<div class="songReason">'+escapeHtml(s.reason||"")+'</div>'+
          (s.youtube_url?'<a class="youtubeBtn" href="'+s.youtube_url+'" target="_blank" rel="noopener">YouTube에서 듣기 ▶</a>':'')+
-         '</div><div class="recordSongIcon">♪</div></div></div>';
+         '</div><div class="recordSongIcon">♪</div></div>'+
+         (s.discovery_song_title?'<div class="archiveDiscovery"><b>한 곡 더 · 새로운 발견</b>'+
+           '<div class="songArchiveTitle">'+escapeHtml(s.discovery_song_title||"")+'</div>'+
+           '<div class="songArchiveArtist">'+escapeHtml(s.discovery_artist||"")+'</div>'+
+           '<div class="songReason">'+escapeHtml(s.discovery_reason||"")+'</div>'+
+           (s.discovery_youtube_url?'<a class="youtubeBtn" href="'+s.discovery_youtube_url+'" target="_blank" rel="noopener">YouTube에서 듣기 ▶</a>':'')+
+           '</div>':'')+
+         '</div>';
     }
 
     if(missions.length){
@@ -2017,15 +2045,22 @@ async function loadSongArchive(){
     const tags=(s.mood_tags||[]).map(t=>'<span class="songTag">'+escapeHtml(t)+'</span>').join("");
     return '<div class="songArchiveItem">'+
       '<div class="songArchiveDate">'+escapeHtml(s.day)+'</div>'+
+      '<div class="songCardLabel">오늘의 메인 곡</div>'+
       '<div class="songMood">'+tags+'</div>'+
       '<div class="songArchiveTitle">'+escapeHtml(s.song_title||"")+'</div>'+
       '<div class="songArchiveArtist">'+escapeHtml(s.artist||"")+'</div>'+
       '<div class="songReason">'+escapeHtml(s.reason||"")+'</div>'+
       (s.youtube_url?'<a class="youtubeBtn" href="'+s.youtube_url+'" target="_blank" rel="noopener">YouTube에서 듣기 ▶</a>':'')+
+      (s.discovery_song_title?'<div class="archiveDiscovery"><div class="songCardLabel">한 곡 더 · 새로운 발견</div>'+
+        '<div class="songArchiveTitle">'+escapeHtml(s.discovery_song_title||"")+'</div>'+
+        '<div class="songArchiveArtist">'+escapeHtml(s.discovery_artist||"")+'</div>'+
+        '<div class="songReason">'+escapeHtml(s.discovery_reason||"")+'</div>'+
+        (s.discovery_youtube_url?'<a class="youtubeBtn" href="'+s.discovery_youtube_url+'" target="_blank" rel="noopener">YouTube에서 듣기 ▶</a>':'')+
+        '</div>':'')+
     '</div>';
   }).join("");
 
-  songArchiveStatus.textContent="총 "+data.length+"곡";
+  songArchiveStatus.textContent="총 "+data.reduce((n,x)=>n+(x.discovery_song_title?2:1),0)+"곡 · "+data.length+"일";
 }
 
 function openLightbox(encodedUrl,caption){
@@ -2396,7 +2431,19 @@ async function loadSong(){
 function renderSong(song){
   const tags=(song.mood_tags||[]).map(t=>'<span class="songTag">'+escapeHtml(t)+'</span>').join("");
   const yt=song.youtube_url?'<a class="youtubeBtn" href="'+song.youtube_url+'" target="_blank" rel="noopener">YouTube에서 듣기 ▶</a>':'';
-  songArea.innerHTML='<div class="songCard"><div class="muted">오늘의 분위기</div><div class="songMood">'+tags+'</div><div class="songTitle">'+escapeHtml(song.song_title||"")+'</div><div class="songArtist">'+escapeHtml(song.artist||"")+'</div><div class="songReason">'+escapeHtml(song.reason||"")+'</div>'+yt+'</div>';
+  const discovery=song.discovery_song_title
+    ? '<div class="songDiscoveryCard">'+
+      '<div class="songCardLabel">한 곡 더 · 새로운 발견</div>'+
+      '<div class="songTitle">'+escapeHtml(song.discovery_song_title||"")+'</div>'+
+      '<div class="songArtist">'+escapeHtml(song.discovery_artist||"")+'</div>'+
+      '<div class="songReason">'+escapeHtml(song.discovery_reason||"")+'</div>'+
+      (song.discovery_youtube_url?'<a class="youtubeBtn" href="'+song.discovery_youtube_url+'" target="_blank" rel="noopener">YouTube에서 듣기 ▶</a>':'')+
+      '</div>'
+    : '';
+  songArea.innerHTML='<div class="songPair">'+
+    '<div class="songCard"><div class="songCardLabel">오늘의 메인 곡</div><div class="muted">오늘의 분위기</div><div class="songMood">'+tags+'</div><div class="songTitle">'+escapeHtml(song.song_title||"")+'</div><div class="songArtist">'+escapeHtml(song.artist||"")+'</div><div class="songReason">'+escapeHtml(song.reason||"")+'</div>'+yt+'</div>'+
+    discovery+
+    '</div>';
 }
 function escapeHtml(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");}
 async function generateSong(){
@@ -2421,7 +2468,7 @@ async function generateSong(){
     }
     const i=qIndex(day);
     const {data:recentSongs=[]}=await sb.from("daily_songs")
-      .select("day,song_title,artist,mood_tags")
+      .select("day,song_title,artist,mood_tags,discovery_song_title,discovery_artist")
       .lt("day",day).order("day",{ascending:false}).limit(14);
 
     const response=await fetch("/api/recommend-song",{
@@ -2445,7 +2492,12 @@ async function generateSong(){
       reason:result.reason,
       mood_tags:result.mood_tags||[],
       youtube_url:result.youtube_url||null,
-      youtube_video_id:result.youtube_video_id||null
+      youtube_video_id:result.youtube_video_id||null,
+      discovery_song_title:result.discovery_song_title||null,
+      discovery_artist:result.discovery_artist||null,
+      discovery_reason:result.discovery_reason||null,
+      discovery_youtube_url:result.discovery_youtube_url||null,
+      discovery_youtube_video_id:result.discovery_youtube_video_id||null
     };
     const {error:saveError}=await sb.from("daily_songs").upsert(record,{onConflict:"day"});
     if(saveError) throw saveError;
@@ -2722,12 +2774,18 @@ async function loadArchive(ds){
   if(song.data){
     const s=song.data;
     const tags=(s.mood_tags||[]).map(t=>'<span class="songTag">'+escapeHtml(t)+'</span>').join("");
-    h+='<div class="person"><b>오늘의 우리 노래</b>'+
+    h+='<div class="person"><b>오늘의 메인 곡</b>'+
       '<div class="songMood">'+tags+'</div>'+
       '<div class="songArchiveTitle">'+escapeHtml(s.song_title||"")+'</div>'+
       '<div class="songArchiveArtist">'+escapeHtml(s.artist||"")+'</div>'+
       '<div class="songReason">'+escapeHtml(s.reason||"")+'</div>'+
       (s.youtube_url?'<a class="youtubeBtn" href="'+s.youtube_url+'" target="_blank" rel="noopener">YouTube에서 듣기 ▶</a>':'')+
+      (s.discovery_song_title?'<div class="archiveDiscovery"><b>한 곡 더 · 새로운 발견</b>'+
+        '<div class="songArchiveTitle">'+escapeHtml(s.discovery_song_title||"")+'</div>'+
+        '<div class="songArchiveArtist">'+escapeHtml(s.discovery_artist||"")+'</div>'+
+        '<div class="songReason">'+escapeHtml(s.discovery_reason||"")+'</div>'+
+        (s.discovery_youtube_url?'<a class="youtubeBtn" href="'+s.discovery_youtube_url+'" target="_blank" rel="noopener">YouTube에서 듣기 ▶</a>':'')+
+        '</div>':'')+
       '</div>';
   }
 
