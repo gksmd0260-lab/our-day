@@ -7,11 +7,11 @@ export default async function handler(req, res) {
     if(!openaiKey) return res.status(500).json({error:"OPENAI_API_KEY가 Vercel에 설정되지 않았어."});
     if(!youtubeKey) return res.status(500).json({error:"YOUTUBE_API_KEY가 Vercel에 설정되지 않았어."});
     
-    // 20일 언어 순환: 한국어 8(40%) / 영어 7(35%) / 일본어 4(20%) / 중국어 1(5%).
+    // 20일 언어 순환: 한국어 8(40%) / 영어 6(30%) / 일본어 4(20%) / 중국어 2(10%).
     // 순환 경계까지 포함해 같은 언어가 이틀 연속 나오지 않도록 배치했다.
     const languageCycle=[
-      "ko","en","ja","ko","en","ko","ja","en","ko","en",
-      "ja","ko","en","ko","ja","en","ko","en","zh","ko"
+      "ko","en","ko","ja","ko","en","ko","zh","ko","en",
+      "ko","ja","ko","en","ko","zh","en","ja","en","ja"
     ];
     const languageLabels={
       ko:"한국어",
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
       ko:"가사가 주로 한국어인 곡을 추천할 것. K-pop, 한국 인디, 밴드, R&B, 힙합, 발라드 등 장르는 자유롭게 선택.",
       en:"가사가 주로 영어인 곡을 추천할 것. 미국/영국뿐 아니라 영어권 전반에서 선택 가능.",
       ja:"가사가 주로 일본어인 곡을 추천할 것. J-pop, 시티팝, 일본 밴드, 인디, R&B 등에서 선택.",
-      zh:"가사가 주로 중국어인 곡을 추천할 것. 너무 마이너한 곡보다는 한국 사용자도 들어본 적 있을 법한 유명 OST, 대만 드라마/영화 OST, 대만·중화권 대중가요를 우선 고려할 것. 곡의 유명도보다 오늘 두 사람의 분위기와의 적합도가 더 중요하지만, 분위기가 비슷하다면 더 익숙하고 접근성 좋은 곡을 선택할 것."
+      zh:"가사가 주로 중국어인 곡을 추천할 것. 중국 본토의 낯선 마이너곡을 억지로 찾기보다 한국에서도 비교적 알려진 영화·드라마 OST, 대만 영화/드라마 OST, 대만 가수의 유명곡, 중화권 대표 대중가요를 우선 고려할 것. 오늘 두 사람의 답변·기분·일기와 맞는 분위기가 최우선이며, 비슷하게 어울리는 후보라면 더 유명하고 접근성 좋은 곡을 선택할 것."
     };
     const languageAnchor=new Date("2026-10-12T00:00:00+09:00");
     const languageDay=new Date(String(day||new Date().toISOString().slice(0,10))+"T00:00:00+09:00");
@@ -75,7 +75,7 @@ export default async function handler(req, res) {
 - 반대로 오래된 곡만 나오지 않도록 최신곡도 섞을 것.
 - 유명한 대표곡만 반복적으로 선택하지 말되, 지나치게 마이너하거나 맥락 없는 곡은 피할 것.
 - OST는 적극 추천 가능하다. 특히 일본어·중국어 차례에는 영화/드라마/애니메이션 OST 중 오늘 분위기와 잘 맞고 비교적 인지도가 있는 곡을 우선 후보로 둘 것.
-- 언어 비율은 20일 기준으로 한국어 40%, 영어 35%, 일본어 20%, 중국어 5%를 목표로 한다.
+- 언어 비율은 20일 기준으로 한국어 40%, 영어 30%, 일본어 20%, 중국어 10%를 목표로 한다.
 - 오늘의 지정 언어는 반드시 '${targetLanguageLabel}'이다.
 - 오늘 언어 지침: ${targetLanguageInstruction}
 - 같은 언어가 이틀 연속 나오지 않도록 한다. 최근 추천곡을 보고 직전 곡과 같은 주 사용 언어로 판단되면 후보를 바꿀 것.
