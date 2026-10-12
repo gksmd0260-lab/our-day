@@ -7,6 +7,33 @@ export default async function handler(req, res) {
     if(!openaiKey) return res.status(500).json({error:"OPENAI_API_KEY가 Vercel에 설정되지 않았어."});
     if(!youtubeKey) return res.status(500).json({error:"YOUTUBE_API_KEY가 Vercel에 설정되지 않았어."});
     
+    // 20일 언어 순환: 한국어 8(40%) / 영어 6(30%) / 일본어 3(15%) / 중국어 2(10%) / 기타 월드뮤직 1(5%).
+    // 순환 경계까지 포함해 같은 언어가 이틀 연속 나오지 않도록 배치했다.
+    const languageCycle=[
+      "ko","en","ko","ja","ko","en","ko","zh","ko","en",
+      "ko","ja","ko","en","ko","world","en","ja","en","zh"
+    ];
+    const languageLabels={
+      ko:"한국어",
+      en:"영어",
+      ja:"일본어",
+      zh:"중국어",
+      world:"기타 월드뮤직"
+    };
+    const languageInstructions={
+      ko:"가사가 주로 한국어인 곡을 추천할 것. K-pop, 한국 인디, 밴드, R&B, 힙합, 발라드 등 장르는 자유롭게 선택.",
+      en:"가사가 주로 영어인 곡을 추천할 것. 미국/영국뿐 아니라 영어권 전반에서 선택 가능.",
+      ja:"가사가 주로 일본어인 곡을 추천할 것. J-pop, 시티팝, 일본 밴드, 인디, R&B 등에서 선택.",
+      zh:"가사가 주로 중국어인 곡을 추천할 것. 만다린/광둥어 모두 가능하며 C-pop, 만도팝, 칸토팝 등에서 선택.",
+      world:"한국어·영어·일본어·중국어가 아닌 언어의 곡을 추천할 것. 프랑스어, 스페인어, 포르투갈어, 이탈리아어 등 다양한 월드뮤직을 고려."
+    };
+    const languageAnchor=new Date("2026-10-12T00:00:00+09:00");
+    const languageDay=new Date(String(day||new Date().toISOString().slice(0,10))+"T00:00:00+09:00");
+    const languageIndex=((Math.floor((languageDay-languageAnchor)/86400000)%languageCycle.length)+languageCycle.length)%languageCycle.length;
+    const targetLanguage=languageCycle[languageIndex];
+    const targetLanguageLabel=languageLabels[targetLanguage];
+    const targetLanguageInstruction=languageInstructions[targetLanguage];
+
     const laneIndex=(()=>{
       const source=String(day||new Date().toISOString().slice(0,10));
       let h=0;
@@ -14,12 +41,12 @@ export default async function handler(req, res) {
       return h%6;
     })();
     const lanes=[
-      "한국어 곡 중심: K-pop, 발라드, 한국 대중가요 중 오늘 분위기에 맞는 곡",
-      "한국 인디/밴드 중심: 인디팝, 포크, 밴드, 록 계열",
-      "한국 R&B/힙합/소울 중심: 너무 센 곡보다는 오늘 분위기에 맞는 곡",
-      "해외 비팝 중심: 록, 소울, R&B, 재즈팝, 일렉트로닉, 포크 중 선택",
-      "해외 팝/올드팝 중심: 최근 해외 팝이 연속됐다면 반드시 다른 결의 곡",
-      "자유 선택: 단 최근 2곡과 국적·장르 결이 겹치지 않는 곡"
+      "팝/대중음악",
+      "인디/밴드/록",
+      "R&B/소울",
+      "힙합/그루브",
+      "시티팝/레트로",
+      "포크/일렉트로닉/기타 장르"
     ];
     const diversityLane=lanes[laneIndex];
 
@@ -34,7 +61,8 @@ export default async function handler(req, res) {
 - 질문과 답변에서 장난스러움, 편안함, 활기, 피로, 그리움, 차분함, 들뜸 같은 하루의 에너지를 읽을 것.
 - 반드시 사랑 노래일 필요는 없다. 가사가 연애와 직접 관련 없어도 오늘의 분위기에 잘 맞으면 추천 가능하다.
 - 실제 존재하는 대중음악 1곡만 추천할 것.
-- 한국곡/해외곡 모두 가능하며 국적보다 분위기 적합도를 우선할 것.
+- 오늘 지정된 언어권 안에서 고르되, 그 안에서는 오늘 분위기 적합도를 가장 우선할 것.
+- 언어 분류는 아티스트 국적이 아니라 실제 보컬/가사의 주 사용 언어를 기준으로 할 것.
 
 다양성 규칙:
 - 최근 14곡과 같은 곡은 절대 다시 추천하지 말 것.
@@ -45,12 +73,13 @@ export default async function handler(req, res) {
 - 최근 곡들이 최신곡에 몰렸다면 1990~2010년대 또는 클래식한 대중음악도 고려할 것.
 - 반대로 오래된 곡만 나오지 않도록 최신곡도 섞을 것.
 - 유명한 대표곡만 반복적으로 선택하지 말고, 분위기에 잘 맞는 덜 뻔한 곡도 고려할 것.
-- 한국곡과 해외곡이 한쪽으로 몰리지 않게 최근 기록을 참고할 것.
-- 같은 '해외 팝' 계열은 최대 2일 연속까지만 허용한다. 최근 2곡이 해외 팝이면 오늘은 해외 팝을 금지하고 한국곡 또는 다른 장르를 고를 것.
-- 최근 5곡 중 해외곡이 4곡 이상이면 오늘은 반드시 한국 아티스트의 곡을 추천할 것.
-- 최근 5곡 중 팝 계열이 4곡 이상이면 오늘은 반드시 팝이 아닌 장르(밴드/록/R&B/힙합/소울/포크/일렉트로닉/시티팝 등)를 고를 것.
+- 언어 비율은 20일 기준으로 한국어 40%, 영어 30%, 일본어 15%, 중국어 10%, 기타 월드뮤직 5%를 목표로 한다.
+- 오늘의 지정 언어는 반드시 '${targetLanguageLabel}'이다.
+- 오늘 언어 지침: ${targetLanguageInstruction}
+- 같은 언어가 이틀 연속 나오지 않도록 한다. 최근 추천곡을 보고 직전 곡과 같은 주 사용 언어로 판단되면 후보를 바꿀 것.
+- 특히 영어권 팝으로 편중되지 않도록 일본어·중국어·기타 월드뮤직 차례에는 반드시 해당 언어권 곡을 고를 것.
+- 오늘의 장르 다양성 방향: ${diversityLane}. 지정 언어 안에서 가능한 한 이 장르 결을 우선 고려할 것.
 - 최근 3곡과 같은 넓은 장르 결을 연속해서 고르지 말 것.
-- 오늘의 다양성 레인 지침을 반드시 우선 적용할 것: ${diversityLane}
 - 단, 가사 정서가 오늘 기록과 정면으로 충돌하는 곡은 피할 것.
 - 지나치게 이별, 불륜, 절망, 관계 파국이 중심인 곡은 피할 것.
 
@@ -71,7 +100,7 @@ ${recentText}
 지은 한 줄 일기: ${diaries.jieun}
 
 형식:
-{"song_title":"곡명","artist":"아티스트","reason":"짧은 이유","mood_tags":["키워드1","키워드2"]}`;
+{"song_title":"곡명","artist":"아티스트","language":"${targetLanguageLabel}","reason":"짧은 이유","mood_tags":["키워드1","키워드2"]}`;
     const oa=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:`Bearer ${openaiKey}`,"Content-Type":"application/json"},body:JSON.stringify({model:"gpt-6-luna",input:prompt})});
     const oaData=await oa.json(); if(!oa.ok) return res.status(502).json({error:oaData?.error?.message||"OpenAI 추천 생성 실패"});
     const raw=oaData.output_text||oaData.output?.flatMap(x=>x.content||[]).find(x=>x.type==="output_text")?.text||"";
@@ -81,6 +110,6 @@ ${recentText}
     u.searchParams.set("part","snippet");u.searchParams.set("q",`${song.artist} ${song.song_title} official audio`);u.searchParams.set("type","video");u.searchParams.set("maxResults","5");u.searchParams.set("regionCode","KR");u.searchParams.set("safeSearch","moderate");u.searchParams.set("key",youtubeKey);
     const yt=await fetch(u), ytData=await yt.json(); if(!yt.ok) return res.status(502).json({error:ytData?.error?.message||"YouTube 검색 실패"});
     const item=(ytData.items||[]).find(x=>x.id?.videoId), videoId=item?.id?.videoId||null;
-    return res.status(200).json({song_title:song.song_title,artist:song.artist,reason:song.reason||"오늘 두 사람의 분위기와 잘 어울리는 곡이야.",mood_tags:Array.isArray(song.mood_tags)?song.mood_tags.slice(0,3):[],youtube_video_id:videoId,youtube_url:videoId?`https://www.youtube.com/watch?v=${videoId}`:null});
+    return res.status(200).json({song_title:song.song_title,artist:song.artist,language:song.language||targetLanguageLabel,reason:song.reason||"오늘 두 사람의 분위기와 잘 어울리는 곡이야.",mood_tags:Array.isArray(song.mood_tags)?song.mood_tags.slice(0,3):[],youtube_video_id:videoId,youtube_url:videoId?`https://www.youtube.com/watch?v=${videoId}`:null});
   } catch(e){console.error(e);return res.status(500).json({error:e.message||"서버 오류"});}
 }
