@@ -7,6 +7,11 @@ create table if not exists public.daily_songs (
   mood_tags text[] default '{}',
   youtube_url text,
   youtube_video_id text,
+  discovery_song_title text,
+  discovery_artist text,
+  discovery_reason text,
+  discovery_youtube_url text,
+  discovery_youtube_video_id text,
   created_at timestamptz default now()
 );
 alter table public.daily_songs enable row level security;
