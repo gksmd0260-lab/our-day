@@ -2204,8 +2204,8 @@ async function loadPhotos(){
       '<div class="status">'+x.person+' · 눌러서 크게 보기</div></div>';
   }).join("")||'<div class="status">아직 오늘 사진이 없어.</div>';
 }
-const MISSION_DATA_PREFIX="__OURDAY_MISSION_V2__";
-let currentMissionRecord=null;
+var MISSION_DATA_PREFIX="__OURDAY_MISSION_V2__";
+var currentMissionRecord=null;
 
 function encodeMissionData(payload){
   return MISSION_DATA_PREFIX+JSON.stringify(payload);
@@ -2294,13 +2294,13 @@ function selectMissionChoice(btn,value){
   btn.classList.add("active");
 }
 
-let missionMediaRecorder=null;
-let missionRecorderStream=null;
-let missionRecordedChunks=[];
-let missionRecordedFile=null;
-let missionRecorderTimerId=null;
-let missionRecorderStartedAt=0;
-let missionRecorderPreviewUrl="";
+var missionMediaRecorder=null;
+var missionRecorderStream=null;
+var missionRecordedChunks=[];
+var missionRecordedFile=null;
+var missionRecorderTimerId=null;
+var missionRecorderStartedAt=0;
+var missionRecorderPreviewUrl="";
 
 function resetMissionRecorderState(stopStream=true){
   if(missionRecorderTimerId){clearInterval(missionRecorderTimerId);missionRecorderTimerId=null}
@@ -2327,8 +2327,12 @@ function updateMissionRecorderTimer(){
 
 async function startMissionRecording(){
   const note=document.getElementById("missionRecorderNote");
+  if(!window.isSecureContext){
+    if(note)note.textContent="보안 연결(HTTPS)에서만 마이크 녹음이 가능해. Vercel 주소로 다시 열어줘.";
+    return;
+  }
   if(!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder==="undefined"){
-    if(note)note.textContent="이 브라우저에서는 앱 내 녹음을 지원하지 않아. 아래 음성 파일 첨부를 이용해줘.";
+    if(note)note.textContent="이 브라우저에서는 앱 내 녹음을 지원하지 않아. Safari 또는 홈 화면 앱에서 다시 시도하거나 아래 음성 파일 첨부를 이용해줘.";
     return;
   }
   try{
