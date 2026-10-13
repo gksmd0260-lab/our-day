@@ -1288,6 +1288,25 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
 }
 .archiveDiscovery b{color:#63715d}
 
+
+/* ===== OUR DAY v5.38 in-app mission recorder ===== */
+.missionRecorder{
+  margin-top:10px;padding:12px;border:1px solid #dfe5da;border-radius:16px;background:#fafbf7;
+}
+.missionRecorderHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+.missionRecorderTitle{font-size:12px;font-weight:850;color:#566451}
+.missionRecorderTimer{font-variant-numeric:tabular-nums;font-size:12px;color:#7a8075}
+.missionRecorderBtns{display:flex;gap:8px;flex-wrap:wrap}
+.missionRecordBtn{
+  border:0;border-radius:13px;padding:10px 13px;font-size:12px;font-weight:850;
+  background:#8fa17f;color:#fff;cursor:pointer;
+}
+.missionRecordBtn.stop{background:#6f756c}
+.missionRecordBtn:disabled{opacity:.45;cursor:default}
+.missionRecorderPreview{margin-top:10px}
+.missionRecorderPreview audio{width:100%;display:block}
+.missionRecorderNote{margin-top:7px;font-size:11px;color:#7a8075;line-height:1.45}
+
 </style></head><body><main class="wrap">
 <div class="top"><div><div class="brand">OUR DAY</div></div><div class="muted" id="today"></div></div>
 <section class="hero" id="hero"><div>지지은 한국복귀까지</div><h1 id="dday">D-?</h1><div id="remain"></div><div style="margin-top:5px;font-size:12px;opacity:.9">귀국일 · 2027.01.31</div><div class="clocks"><div class="clock">🇰🇷 한국<b id="kr">--:--</b></div><div class="clock">🇧🇪 벨기에<b id="be">--:--</b></div></div></section>
@@ -2209,6 +2228,10 @@ function parseMissionData(raw){
   return {type:"text",category:"",text:String(raw),date:"",attachmentUrl:"",attachmentKind:""};
 }
 function renderMissionResponseUI(ds,data=null){
+  if(missionMediaRecorder && missionMediaRecorder.state!=="inactive"){
+    try{missionMediaRecorder.stop()}catch(_e){}
+  }
+  resetMissionRecorderState(true);
   const box=document.getElementById("missionResponseUI");
   if(!box)return;
   const spec=missionSpec(ds);
@@ -2245,9 +2268,20 @@ function renderMissionResponseUI(ds,data=null){
        '<div class="missionPreview'+(saved.attachmentUrl?" show":"")+'" id="missionAttachmentPreview">'+
        (saved.attachmentUrl?'<img src="'+escapeHtml(saved.attachmentUrl)+'" alt="미션 첨부 사진">':'')+'</div>';
   }else if(spec.attachmentKind==="audio"){
-    h+='<div class="missionAttachRow"><label class="missionFieldLabel">음성 첨부 <span class="muted">선택</span></label>'+
-       '<input class="missionFile" id="missionAttachmentInput" type="file" accept="audio/*" capture onchange="previewMissionAttachment(this,\'audio\')"></div>'+
-       '<div class="status" id="missionAttachmentPreview">'+(saved.attachmentUrl?"기존 음성 첨부가 저장되어 있어. 새 파일을 고르면 교체돼.":"")+'</div>';
+    h+='<div class="missionRecorder">'+
+       '<div class="missionRecorderHead"><div class="missionRecorderTitle">🎙 앱에서 바로 녹음</div><div class="missionRecorderTimer" id="missionRecorderTimer">00:00</div></div>'+
+       '<div class="missionRecorderBtns">'+
+       '<button type="button" class="missionRecordBtn" id="missionRecordStartBtn" onclick="startMissionRecording()">녹음 시작</button>'+
+       '<button type="button" class="missionRecordBtn stop" id="missionRecordStopBtn" onclick="stopMissionRecording()" disabled>녹음 종료</button>'+
+       '</div>'+
+       '<div class="missionRecorderPreview" id="missionRecorderPreview">'+
+       (saved.attachmentUrl?'<audio controls preload="metadata" src="'+escapeHtml(saved.attachmentUrl)+'"></audio>':'')+
+       '</div>'+
+       '<div class="missionRecorderNote" id="missionRecorderNote">처음 녹음할 때 마이크 권한을 허용해줘. 녹음 후 미리 듣고 아래 답 저장을 누르면 저장돼.</div>'+
+       '</div>'+
+       '<div class="missionAttachRow" style="margin-top:10px"><label class="missionFieldLabel">또는 음성 파일 첨부 <span class="muted">선택</span></label>'+
+       '<input class="missionFile" id="missionAttachmentInput" type="file" accept="audio/*" onchange="previewMissionAttachment(this,\'audio\')"></div>'+
+       '<div class="status" id="missionAttachmentPreview">'+(saved.attachmentUrl?"기존 음성이 저장되어 있어. 새 녹음이나 파일로 교체할 수 있어.":"")+'</div>';
   }
   box.innerHTML=h;
   box.dataset.day=ds;
@@ -2260,6 +2294,103 @@ function selectMissionChoice(btn,value){
   btn.classList.add("active");
 }
 
+let missionMediaRecorder=null;
+let missionRecorderStream=null;
+let missionRecordedChunks=[];
+let missionRecordedFile=null;
+let missionRecorderTimerId=null;
+let missionRecorderStartedAt=0;
+let missionRecorderPreviewUrl="";
+
+function resetMissionRecorderState(stopStream=true){
+  if(missionRecorderTimerId){clearInterval(missionRecorderTimerId);missionRecorderTimerId=null}
+  if(stopStream && missionRecorderStream){
+    missionRecorderStream.getTracks().forEach(t=>{try{t.stop()}catch(_e){}});
+    missionRecorderStream=null;
+  }
+  missionMediaRecorder=null;
+  missionRecordedChunks=[];
+  const startBtn=document.getElementById("missionRecordStartBtn");
+  const stopBtn=document.getElementById("missionRecordStopBtn");
+  if(startBtn)startBtn.disabled=false;
+  if(stopBtn)stopBtn.disabled=true;
+}
+
+function updateMissionRecorderTimer(){
+  const el=document.getElementById("missionRecorderTimer");
+  if(!el)return;
+  const sec=Math.max(0,Math.floor((Date.now()-missionRecorderStartedAt)/1000));
+  const m=String(Math.floor(sec/60)).padStart(2,"0");
+  const s=String(sec%60).padStart(2,"0");
+  el.textContent=m+":"+s;
+}
+
+async function startMissionRecording(){
+  const note=document.getElementById("missionRecorderNote");
+  if(!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder==="undefined"){
+    if(note)note.textContent="이 브라우저에서는 앱 내 녹음을 지원하지 않아. 아래 음성 파일 첨부를 이용해줘.";
+    return;
+  }
+  try{
+    if(missionRecorderStream)resetMissionRecorderState(true);
+    missionRecordedFile=null;
+    missionRecordedChunks=[];
+    missionRecorderStream=await navigator.mediaDevices.getUserMedia({audio:true});
+
+    const preferred=[
+      "audio/mp4;codecs=mp4a.40.2",
+      "audio/mp4",
+      "audio/webm;codecs=opus",
+      "audio/webm"
+    ];
+    const mime=preferred.find(x=>MediaRecorder.isTypeSupported?.(x))||"";
+    missionMediaRecorder=new MediaRecorder(missionRecorderStream,mime?{mimeType:mime}:undefined);
+
+    missionMediaRecorder.ondataavailable=e=>{
+      if(e.data&&e.data.size>0)missionRecordedChunks.push(e.data);
+    };
+    missionMediaRecorder.onerror=e=>{
+      console.error("mission recorder error",e);
+      if(note)note.textContent="녹음 중 오류가 발생했어. 다시 시도하거나 파일 첨부를 이용해줘.";
+      resetMissionRecorderState(true);
+    };
+    missionMediaRecorder.onstop=()=>{
+      const type=missionMediaRecorder?.mimeType||missionRecordedChunks[0]?.type||"audio/mp4";
+      const blob=new Blob(missionRecordedChunks,{type});
+      const ext=type.includes("webm")?"webm":type.includes("ogg")?"ogg":"m4a";
+      missionRecordedFile=new File([blob],"mission-recording-"+Date.now()+"."+ext,{type});
+      if(missionRecorderPreviewUrl)URL.revokeObjectURL(missionRecorderPreviewUrl);
+      missionRecorderPreviewUrl=URL.createObjectURL(blob);
+      const preview=document.getElementById("missionRecorderPreview");
+      if(preview)preview.innerHTML='<audio controls preload="metadata" src="'+missionRecorderPreviewUrl+'"></audio>';
+      if(note)note.textContent="녹음 완료 ✓ 미리 들어본 뒤 답 저장을 눌러줘.";
+      resetMissionRecorderState(true);
+    };
+
+    missionRecorderStartedAt=Date.now();
+    updateMissionRecorderTimer();
+    missionRecorderTimerId=setInterval(updateMissionRecorderTimer,500);
+    const startBtn=document.getElementById("missionRecordStartBtn");
+    const stopBtn=document.getElementById("missionRecordStopBtn");
+    if(startBtn)startBtn.disabled=true;
+    if(stopBtn)stopBtn.disabled=false;
+    if(note)note.textContent="녹음 중이야. 끝나면 녹음 종료를 눌러줘.";
+    missionMediaRecorder.start(250);
+  }catch(e){
+    console.error("microphone permission error",e);
+    if(note)note.textContent=e?.name==="NotAllowedError"?"마이크 권한이 허용되지 않았어. 브라우저 설정에서 마이크를 허용해줘.":"녹음을 시작하지 못했어. 아래 음성 파일 첨부를 이용해도 돼.";
+    resetMissionRecorderState(true);
+  }
+}
+
+function stopMissionRecording(){
+  if(missionMediaRecorder && missionMediaRecorder.state!=="inactive"){
+    const stopBtn=document.getElementById("missionRecordStopBtn");
+    if(stopBtn)stopBtn.disabled=true;
+    missionMediaRecorder.stop();
+  }
+}
+
 function previewMissionAttachment(input,kind){
   const f=input?.files?.[0];
   const preview=document.getElementById("missionAttachmentPreview");
@@ -2270,13 +2401,16 @@ function previewMissionAttachment(input,kind){
     preview.innerHTML='<img src="'+url+'" alt="선택한 미션 사진">';
     setTimeout(()=>{try{URL.revokeObjectURL(url)}catch(_e){}},5000);
   }else{
-    preview.textContent="선택됨 · "+f.name;
+    missionRecordedFile=null;
+    const url=URL.createObjectURL(f);
+    preview.innerHTML='선택됨 · '+escapeHtml(f.name)+'<div style="margin-top:7px"><audio controls preload="metadata" src="'+url+'"></audio></div>';
+    setTimeout(()=>{try{URL.revokeObjectURL(url)}catch(_e){}},60000);
   }
 }
 async function uploadMissionAttachment(file,kind){
   if(!file)return "";
   const rawExt=(file.name?.split(".").pop()||"").toLowerCase();
-  const fallback=kind==="audio"?"m4a":"jpg";
+  const fallback=kind==="audio"?(file.type?.includes("webm")?"webm":file.type?.includes("ogg")?"ogg":"m4a"):"jpg";
   const safeExt=rawExt.replace(/[^a-z0-9]/g,"").slice(0,6)||fallback;
   const slug=currentUser==="하능"?"haneung":"jieun";
   const path="missions/"+key()+"/"+slug+"-"+Date.now()+"."+safeExt;
@@ -2310,7 +2444,7 @@ async function saveMissionAnswer(){
   const fileEl=document.getElementById("missionAttachmentInput");
   const text=(textEl?.value||"").trim();
   const selectedDate=dateEl?.value||"";
-  const file=fileEl?.files?.[0]||null;
+  const file=missionRecordedFile || fileEl?.files?.[0] || null;
 
   if((spec.type==="date_text"||spec.type==="plan_date") && (!selectedDate||!text)){
     missionStatus.textContent=spec.type==="date_text"?"날짜와 한 문장 답을 같이 남겨줘.":"희망 날짜와 데이트 계획을 같이 남겨줘.";
@@ -2343,6 +2477,8 @@ async function saveMissionAnswer(){
     );
     if(error)throw error;
     currentMissionRecord=payload;
+    missionRecordedFile=null;
+    if(missionRecorderPreviewUrl){URL.revokeObjectURL(missionRecorderPreviewUrl);missionRecorderPreviewUrl=""}
     missionStatus.textContent="내 미션 답 저장 완료 ✓";
     await Promise.all([loadMission(),loadHomeStatus()]);
   }catch(e){
