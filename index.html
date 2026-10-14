@@ -1307,8 +1307,24 @@ html,body,button,input,textarea,select,.tabs button,.status,.muted,.day,.week{
 .missionRecorderPreview audio{width:100%;display:block}
 .missionRecorderNote{margin-top:7px;font-size:11px;color:#7a8075;line-height:1.45}
 
+
+/* ===== OUR DAY v5.40 manual refresh ===== */
+.topRight{
+  display:flex;align-items:center;gap:7px;
+}
+.refreshBtn{
+  width:30px;height:30px;border:1px solid var(--line);border-radius:50%;
+  background:#fffdf8;color:#697366;display:flex;align-items:center;justify-content:center;
+  padding:0;font-size:16px;line-height:1;cursor:pointer;
+  transition:transform .18s ease,background .18s ease,opacity .18s ease;
+}
+.refreshBtn:active{transform:scale(.94)}
+.refreshBtn.refreshing{animation:ourdayRefreshSpin .8s linear infinite;opacity:.72}
+.refreshBtn.done{background:#e7eee2;color:#52644c}
+@keyframes ourdayRefreshSpin{to{transform:rotate(360deg)}}
+
 </style></head><body><main class="wrap">
-<div class="top"><div><div class="brand">OUR DAY</div></div><div class="muted" id="today"></div></div>
+<div class="top"><div><div class="brand">OUR DAY</div></div><div class="topRight"><div class="muted" id="today"></div><button class="refreshBtn" id="refreshBtn" onclick="refreshAppData()" aria-label="최신 내용 새로고침" title="새로고침">↻</button></div></div>
 <section class="hero" id="hero"><div>지지은 한국복귀까지</div><h1 id="dday">D-?</h1><div id="remain"></div><div style="margin-top:5px;font-size:12px;opacity:.9">귀국일 · 2027.01.31</div><div class="clocks"><div class="clock">🇰🇷 한국<b id="kr">--:--</b></div><div class="clock">🇧🇪 벨기에<b id="be">--:--</b></div></div></section>
 <div class="stats" id="stats" style="display:none"><div class="stat"><span class="muted">연속 기록</span><strong id="streak">0일</strong></div><div class="stat"><span class="muted">함께 기록</span><strong id="total">0일</strong></div></div>
 <section class="card" id="loginCard"><h2>🔐 우리 둘만 입장</h2><select id="who"><option>하능</option><option>지은</option></select><input id="pin" type="password" inputmode="numeric" placeholder="둘만 아는 PIN" style="margin-top:8px"><button class="btn" onclick="enterApp()" style="margin-top:8px">입장</button><div class="status" id="loginStatus"></div></section>
@@ -2850,7 +2866,70 @@ async function uploadProfilePhoto(person,input){
   }
 }
 
-async function refreshAll(){await Promise.all([loadAnswers(),loadMoods(),loadDiary(),loadPhotos(),loadMission(),loadStats(),loadSong(),loadHomeStatus(),loadProfilePhotos()]);renderAnniversaries()}
+async function refreshAll(){
+  await Promise.all([loadAnswers(),loadMoods(),loadDiary(),loadPhotos(),loadMission(),loadStats(),loadSong(),loadHomeStatus(),loadProfilePhotos()]);
+  renderAnniversaries();
+}
+async function refreshAppData(){
+  const btn=document.getElementById("refreshBtn");
+  if(btn?.classList.contains("refreshing"))return;
+  if(btn){
+    btn.classList.remove("done");
+    btn.classList.add("refreshing");
+    btn.disabled=true;
+    btn.title="새로고침 중...";
+  }
+  try{
+    // 배포된 최신 파일이 있는지도 함께 확인한다.
+    if("serviceWorker" in navigator){
+      try{
+        const reg=await navigator.serviceWorker.getRegistration();
+        if(reg)await reg.update();
+      }catch(_e){}
+    }
+
+    clocks();
+    updateCoupleDays();
+
+    if(currentUser && sb){
+      await refreshAll();
+
+      const active=document.querySelector(".tabs button.active")?.id||"";
+      if(active==="tabArchive"){
+        await loadArchiveFeed();
+        await renderArchiveCalendar();
+      }else if(active==="tabGallery"){
+        await loadGallery();
+      }else if(active==="tabSongs"){
+        await loadSongArchive();
+      }else if(active==="tabHome"){
+        await loadHomeStatus();
+      }
+    }
+
+    if(btn){
+      btn.classList.remove("refreshing");
+      btn.classList.add("done");
+      btn.textContent="✓";
+      btn.title="최신 내용 반영 완료";
+      setTimeout(()=>{
+        btn.classList.remove("done");
+        btn.textContent="↻";
+        btn.title="새로고침";
+        btn.disabled=false;
+      },1100);
+    }
+  }catch(e){
+    console.error("manual refresh error",e);
+    if(btn){
+      btn.classList.remove("refreshing");
+      btn.textContent="!";
+      btn.title="새로고침 실패";
+      btn.disabled=false;
+      setTimeout(()=>{btn.textContent="↻";btn.title="새로고침"},1400);
+    }
+  }
+}
 function showTab(t){
   homeView.style.display=t==="home"?"block":"none";
   todayView.style.display=t==="today"?"block":"none";
