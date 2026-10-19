@@ -2039,6 +2039,16 @@ async function openDayRecord(day,focusUrl="",owner=""){
          '</div>';
     }
 
+    if(!song.data && day<=key()){
+      const complete=(rows,field)=>["하능","지은"].every(person=>rows.some(x=>x.person===person && String(x[field]||"").trim()));
+      const ready=complete(answers,"answer") && complete(moods,"mood") && complete(diaries,"diary");
+      h+='<div class="recordSection"><div class="recordMiniLabel">OUR SONG</div><b>그날의 우리 노래</b>'+
+        (ready
+          ? '<div class="status" style="margin-bottom:10px">둘의 기록이 모두 모였어. 지나간 날이어도 그날의 노래를 처음 추천받을 수 있어.</div><button class="btn" id="archiveSongGenerateBtn" onclick="generateSongForDay(\''+day+'\')">그날의 노래 받기</button><div class="status" id="archiveSongGenerateStatus"></div>'
+          : '<div class="status">둘 다 질문·기분·한 줄 일기를 남기면 추천받을 수 있어.</div>')+
+        '</div>';
+    }
+
     if(missions.length){
       h+='<div class="recordSection"><div class="recordMiniLabel">MISSION</div><b>그날 미션</b>'+
          '<div class="status" style="margin-bottom:8px">'+escapeHtml(missionFor(day))+'</div>'+
@@ -2602,15 +2612,35 @@ function renderSong(song){
     '</div>';
 }
 function escapeHtml(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");}
-async function generateSong(){
-  const day=key();
-  songArea.innerHTML='<div class="songLoading">오늘의 분위기를 읽고 노래를 고르는 중...</div>';
+let songGenerationInProgress=false;
+async function generateSong(){return generateSongForDay(key());}
+async function generateSongForDay(day){
+  if(songGenerationInProgress)return;
+  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(day) || day>key())return;
+  songGenerationInProgress=true;
+  const isToday=day===key();
+  const btn=document.getElementById("archiveSongGenerateBtn");
+  const status=document.getElementById("archiveSongGenerateStatus");
+  if(isToday) songArea.innerHTML='<div class="songLoading">오늘의 분위기를 읽고 노래를 고르는 중...</div>';
+  else{
+    if(btn)btn.disabled=true;
+    if(status)status.textContent="그날의 분위기를 읽고 노래를 고르는 중...";
+  }
   try{
+    // 이미 추천받은 날짜는 새로 생성하거나 변경하지 않는다.
+    const {data:existing,error:existingError}=await sb.from("daily_songs").select("*").eq("day",day).maybeSingle();
+    if(existingError)throw existingError;
+    if(existing){
+      if(isToday)renderSong(existing);
+      else await openDayRecord(day);
+      return;
+    }
     const [a,m,d]=await Promise.all([
       sb.from("daily_answers").select("person,answer").eq("day",day),
       sb.from("daily_moods").select("person,mood").eq("day",day),
       sb.from("daily_diaries").select("person,diary").eq("day",day)
     ]);
+    for(const query of [a,m,d])if(query.error)throw query.error;
     const answers=a.data||[], moodsNow=m.data||[], diariesNow=d.data||[];
     const hAnswer=answers.find(x=>x.person==="하능")?.answer||"";
     const jAnswer=answers.find(x=>x.person==="지은")?.answer||"";
@@ -2618,21 +2648,19 @@ async function generateSong(){
     const jMood=moodsNow.find(x=>x.person==="지은")?.mood||"";
     const hDiary=diariesNow.find(x=>x.person==="하능")?.diary||"";
     const jDiary=diariesNow.find(x=>x.person==="지은")?.diary||"";
-    if(!hAnswer||!jAnswer||!hMood||!jMood||!hDiary||!jDiary){
-      songArea.innerHTML='<div class="songLocked">둘 다 질문·기분·한 줄 일기를 남긴 뒤 다시 눌러줘.</div>';
-      return;
+    if(!hAnswer.trim()||!jAnswer.trim()||!hMood.trim()||!jMood.trim()||!hDiary.trim()||!jDiary.trim()){
+      throw new Error("둘 다 질문·기분·한 줄 일기를 작성해야 추천받을 수 있어.");
     }
-    const i=qIndex(day);
-    const {data:recentSongs=[]}=await sb.from("daily_songs")
+    const {data:recentSongs=[],error:recentError}=await sb.from("daily_songs")
       .select("day,song_title,artist,mood_tags,discovery_song_title,discovery_artist")
       .lt("day",day).order("day",{ascending:false}).limit(14);
-
+    if(recentError)throw recentError;
     const response=await fetch("/api/recommend-song",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
         day,
-        question:QUESTIONS[i],
+        question:QUESTIONS[qIndex(day)],
         answers:{haneung:hAnswer,jieun:jAnswer},
         moods:{haneung:hMood,jieun:jMood},
         diaries:{haneung:hDiary,jieun:jDiary},
@@ -2640,7 +2668,7 @@ async function generateSong(){
       })
     });
     const result=await response.json();
-    if(!response.ok) throw new Error(result.error||"노래 추천에 실패했어.");
+    if(!response.ok)throw new Error(result.error||"노래 추천에 실패했어.");
     const record={
       day,
       song_title:result.song_title,
@@ -2655,14 +2683,34 @@ async function generateSong(){
       discovery_youtube_url:result.discovery_youtube_url||null,
       discovery_youtube_video_id:result.discovery_youtube_video_id||null
     };
-    const {error:saveError}=await sb.from("daily_songs").upsert(record,{onConflict:"day"});
-    if(saveError) throw saveError;
-    renderSong(record);
+    // INSERT 전용: 다른 기기에서 먼저 저장했더라도 기존 추천곡을 덮어쓰지 않는다.
+    const {error:saveError}=await sb.from("daily_songs").insert(record);
+    if(saveError){
+      if(saveError.code==="23505"){
+        const {data:saved,error:loadError}=await sb.from("daily_songs").select("*").eq("day",day).maybeSingle();
+        if(loadError||!saved)throw loadError||saveError;
+        if(isToday)renderSong(saved);
+        else await openDayRecord(day);
+        return;
+      }
+      throw saveError;
+    }
+    if(isToday)renderSong(record);
+    else{
+      await openDayRecord(day);
+      await loadSongArchive();
+    }
   }catch(e){
     console.error(e);
-    songArea.innerHTML='<div class="songLocked">추천 중 오류가 발생했어.<br><span class="status">'+escapeHtml(e.message||String(e))+'</span><br><button class="btn" style="margin-top:10px" onclick="generateSong()">다시 시도</button></div>';
-  }
+    const message="추천 중 오류가 발생했어: "+escapeHtml(e.message||String(e));
+    if(isToday) songArea.innerHTML='<div class="songLocked">'+message+'<br><button class="btn" style="margin-top:10px" onclick="generateSong()">다시 시도</button></div>';
+    else{
+      if(status)status.textContent="추천 중 오류가 발생했어: "+(e.message||String(e));
+      if(btn)btn.disabled=false;
+    }
+  }finally{songGenerationInProgress=false;}
 }
+
 async function loadStats(){
   const rs=await Promise.all(
     ["daily_answers","daily_moods","daily_diaries","daily_photos","daily_missions","daily_songs"]
