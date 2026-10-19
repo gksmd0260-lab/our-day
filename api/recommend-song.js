@@ -93,7 +93,7 @@ export default async function handler(req, res) {
 - 지나치게 이별, 불륜, 절망, 관계 파국이 중심인 곡은 피할 것.
 
 출력:
-- main.reason과 discovery.reason은 각각 한국어 2문장 이내, 90자 이내.
+- 곡 제목과 아티스트명은 원어 그대로 유지하되, main.reason과 discovery.reason은 반드시 자연스러운 한국어로만 작성할 것. 중국어·일본어·영어 구절을 설명에 섞지 말 것.\n- main.reason과 discovery.reason은 각각 한국어 2문장 이내, 90자 이내.
 - main.mood_tags는 오늘의 분위기를 나타내는 한국어 2~3개.
 - JSON만 출력할 것.
 
