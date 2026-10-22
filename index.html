@@ -1542,6 +1542,16 @@ function returnDateKey(){
 function isBeforeReturn(ds){
   return ds<returnDateKey();
 }
+// v5.46: 10/22부터 30일간 활동 소재와 참여 방식을 교차 배치한다.
+// 이미 지나간 날의 미션/답변은 변경하지 않는다.
+const MISSION_VARIETY_START="2026-10-22";
+const MISSION_VARIETY_PLAN=[{"category":"photo","topic":"오늘 눈에 띈 동그란 물건","action":"동그란 물건 하나 사진으로 찍고 별명을 붙여보기","type":"text_photo","label":"사진","attachmentKind":"image"},{"category":"audio","topic":"10초 소리 엽서","action":"지금 주변에서 들리는 소리 하나를 짧게 들려주기","type":"audio","label":"음성","attachmentKind":"audio"},{"category":"choice","topic":"오늘의 소소한 보상","action":"간식 / 낮잠 / 산책 중 하나 고르기","type":"choice","label":"선택","attachmentKind":"","options":["간식","낮잠","산책"]},{"category":"memory","topic":"웃음이 터졌던 날","action":"그날 날짜를 골라 웃겼던 이유 한 줄 적기","type":"date_text","label":"기억","attachmentKind":""},{"category":"promise","topic":"일주일 작은 챌린지","action":"일주일 동안 각자 해볼 사소한 습관 하나 정하기","type":"promise","label":"약속","attachmentKind":""},{"category":"photo","topic":"내 책상 위의 주인공","action":"가장 자주 쓰는 물건 한 장 찍고 소개하기","type":"text_photo","label":"사진","attachmentKind":"image"},{"category":"audio","topic":"30초 라디오 DJ","action":"오늘 하루를 라디오 첫 멘트처럼 소개하기","type":"audio","label":"음성","attachmentKind":"audio"},{"category":"choice","topic":"오늘 하루의 배경음","action":"잔잔함 / 신남 / 몽글몽글 중 하나 고르기","type":"choice","label":"선택","attachmentKind":"","options":["잔잔함","신남","몽글몽글"]},{"category":"photo","topic":"창밖 한 장","action":"지금 보이는 바깥 풍경을 사진으로 남기기","type":"text_photo","label":"사진","attachmentKind":"image"},{"category":"memory","topic":"한 번 더 먹고 싶은 날","action":"기억나는 식사 날짜와 음식 이름 적기","type":"date_text","label":"기억","attachmentKind":""},{"category":"promise","topic":"이번 주 서로 응원하기","action":"상대방에게 해줄 응원 문구 하나 정하기","type":"promise","label":"약속","attachmentKind":""},{"category":"audio","topic":"한 문장 뉴스","action":"오늘의 내 소식을 뉴스 앵커처럼 짧게 전하기","type":"audio","label":"음성","attachmentKind":"audio"},{"category":"choice","topic":"오늘의 취향 실험","action":"달콤 / 짭짤 / 매콤 중 가장 끌리는 것 고르기","type":"choice","label":"선택","attachmentKind":"","options":["달콤","짭짤","매콤"]},{"category":"photo","topic":"가장 마음에 드는 색","action":"오늘 보인 색 하나를 사진으로 공유하기","type":"text_photo","label":"사진","attachmentKind":"image"},{"category":"memory","topic":"뜻밖의 친절","action":"누군가에게 고마웠던 날을 골라 이유 남기기","type":"date_text","label":"기억","attachmentKind":""},{"category":"audio","topic":"별명 연구소","action":"상대방에게 어울리는 새 별명을 목소리로 말해보기","type":"audio","label":"음성","attachmentKind":"audio"},{"category":"promise","topic":"바꾸고 싶은 한 가지","action":"이번 주 줄여볼 사소한 습관 한 가지 적기","type":"promise","label":"약속","attachmentKind":""},{"category":"choice","topic":"가상의 하루 휴가","action":"책 / 게임 / 영화 중 하나 고르기","type":"choice","label":"선택","attachmentKind":"","options":["책","게임","영화"]},{"category":"photo","topic":"작고 귀여운 것 찾기","action":"오늘 발견한 작은 물건이나 장면 찍기","type":"text_photo","label":"사진","attachmentKind":"image"},{"category":"memory","topic":"나에게 용기가 생긴 날","action":"기억나는 날짜와 그때 했던 행동 적기","type":"date_text","label":"기억","attachmentKind":""},{"category":"audio","topic":"오늘의 기분 효과음","action":"내 기분을 의성어로 표현해 들려주기","type":"audio","label":"음성","attachmentKind":"audio"},{"category":"promise","topic":"다음 통화 미니 이벤트","action":"다음 통화 때 서로 보여줄 물건 하나 정하기","type":"promise","label":"약속","attachmentKind":""},{"category":"choice","topic":"비 오는 날의 선택","action":"뜨거운 차 / 음악 / 낮잠 중 하나 고르기","type":"choice","label":"선택","attachmentKind":"","options":["뜨거운 차","음악","낮잠"]},{"category":"photo","topic":"발밑 풍경","action":"오늘 걸어간 길의 바닥이나 신발 찍기","type":"text_photo","label":"사진","attachmentKind":"image"},{"category":"memory","topic":"기억에 남는 선물","action":"선물을 주거나 받았던 날짜와 사연 적기","type":"date_text","label":"기억","attachmentKind":""},{"category":"audio","topic":"우리만의 인사말","action":"새로운 인사말 하나 만들어 음성으로 남기기","type":"audio","label":"음성","attachmentKind":"audio"},{"category":"choice","topic":"잠깐 생긴 자유시간","action":"그림 / 음악 / 운동 중 가장 하고 싶은 것 고르기","type":"choice","label":"선택","attachmentKind":"","options":["그림","음악","운동"]},{"category":"photo","topic":"오늘의 그림자","action":"독특한 그림자나 빛을 찾아 사진 남기기","type":"text_photo","label":"사진","attachmentKind":"image"},{"category":"promise","topic":"주말까지 한 가지","action":"이번 주말 전까지 스스로에게 해줄 일 한 가지 적기","type":"promise","label":"약속","attachmentKind":""},{"category":"audio","topic":"5초 응원 메시지","action":"상대방에게 지금 필요한 응원 한마디 남기기","type":"audio","label":"음성","attachmentKind":"audio"}];
+function variedMissionForDay(ds){
+  if(ds<MISSION_VARIETY_START)return null;
+  const dayNo=Math.floor((new Date(ds+"T00:00:00+09:00")-new Date(MISSION_VARIETY_START+"T00:00:00+09:00"))/86400000);
+  return dayNo>=0&&dayNo<MISSION_VARIETY_PLAN.length?MISSION_VARIETY_PLAN[dayNo]:null;
+}
+
 function missionSpec(ds){
   let item=MISSION_LIBRARY[missionIndex(ds)];
 
@@ -1570,6 +1580,10 @@ function missionSpec(ds){
     }
   }
 
+  // 오늘 이후 지정한 다양한 미션을 반영하되 과거 기록은 변경하지 않는다.
+  const varied=variedMissionForDay(ds);
+  if(varied)item=varied;
+
   const prompts={
     memory:"달력에서 날짜를 고르고, 왜 기억나는지 한 문장으로 남겨봐.",
     photo:"한 문장으로 답하고 사진이 있다면 같이 남겨봐.",
@@ -1596,7 +1610,7 @@ function missionSpec(ds){
     type:item.type,
     attachmentKind:item.attachmentKind,
     prompt:prompts[item.category]||"",
-    options:optionMap[item.action]||[]
+    options:item.options||optionMap[item.action]||[]
   };
 }
 function missionFor(ds){
