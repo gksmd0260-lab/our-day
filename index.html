@@ -1552,7 +1552,14 @@ function missionSpec(ds){
       const fallbackIds=["photo","promise","choice"];
       const fallbackId=fallbackIds[dateSlot%fallbackIds.length];
       const pool=MISSION_LIBRARY.filter(x=>x.category===fallbackId);
-      item=pool[dateSlot%pool.length];
+      // 대체 미션과 전날 원래 미션의 중복을 방지한다.
+      const previousIndex=(missionIndex(ds)-1+365)%365;
+      const previousItem=MISSION_LIBRARY[previousIndex];
+      const first=dateSlot%pool.length;
+      item=pool[first];
+      if(item.topic===previousItem.topic && item.action===previousItem.action){
+        item=pool[(first+1)%pool.length];
+      }
     }else{
       item={
         ...item,
